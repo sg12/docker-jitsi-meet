@@ -1,7 +1,7 @@
 ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
 ARG JITSI_BRANCH=develop
 
-FROM jitsi/base:latest
+FROM jitsi/base:stable
 
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
