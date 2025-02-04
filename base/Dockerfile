@@ -1,7 +1,17 @@
 FROM docker.io/library/debian:bookworm-slim
 
+ARG JITSI_GIT_REPO #-1
+ARG JITSI_GIT_BRANCH #-2
 ARG JITSI_RELEASE=stable
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+
+
+WORKDIR /opt #-3
+
+#-4 all block
+RUN apt-get update && apt-get install -y git && \
+    git clone --depth=1 --branch "$JITSI_GIT_BRANCH" "$JITSI_GIT_REPO" /opt/jitsi-meet && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY rootfs /
 
