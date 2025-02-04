@@ -1,12 +1,16 @@
-ARG JITSI_REPO=jitsi
-ARG BASE_TAG=latest
-FROM ${JITSI_REPO}/base:${BASE_TAG}
+ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
+ARG JITSI_BRANCH=develop
+ENV JITSI_GIT_REPO=${JITSI_GIT_REPO}
+ENV JITSI_BRANCH=${JITSI_BRANCH}
 
-LABEL org.opencontainers.image.title="Jitsi Meet"
-LABEL org.opencontainers.image.description="WebRTC compatible JavaScript application that uses Jitsi Videobridge to provide high quality, scalable video conferences."
-LABEL org.opencontainers.image.url="https://jitsi.org/jitsi-meet/"
-LABEL org.opencontainers.image.source="https://github.com/jitsi/docker-jitsi-meet"
-LABEL org.opencontainers.image.documentation="https://jitsi.github.io/handbook/"
+FROM jitsi/base:latest
+
+LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
+
+RUN apt-dpkg-wrap apt-get update && apt-dpkg-wrap apt-get install -y git
+
+
+RUN git clone --depth 1 -b "$JITSI_BRANCH" "$JITSI_GIT_REPO" /usr/share/jitsi-meet
 
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 COPY rootfs/ /
