@@ -1,5 +1,5 @@
-ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
-ARG JITSI_BRANCH=develop
+ARG JITSI_GIT_REPO
+ARG JITSI_BRANCH
 
 FROM jitsi/base:stable
 
