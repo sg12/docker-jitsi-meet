@@ -14,7 +14,8 @@ RUN git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https:/
     (echo "Ошибка: Репозиторий не найден или неверный branch"; exit 1)
 
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
-COPY rootfs/ /
+COPY /usr/share/jitsi-meet /usr/share/jitsi-meet
+
 
 RUN apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y dnsutils cron nginx-extras jitsi-meet-web socat curl jq && \
