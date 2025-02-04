@@ -10,7 +10,7 @@ RUN apt-dpkg-wrap apt-get update && apt-dpkg-wrap apt-get install -y git
 # Проверка аргументов перед клонированием
 RUN echo "Cloning from $JITSI_GIT_REPO, branch $JITSI_BRANCH"
 
-RUN git clone --depth 1 -b "${JITSI_BRANCH}" "${JITSI_GIT_REPO}" /usr/share/jitsi-meet || \
+RUN git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet || \
     (echo "Ошибка: Репозиторий не найден или неверный branch"; exit 1)
 
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
