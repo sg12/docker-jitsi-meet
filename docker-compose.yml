@@ -4,7 +4,8 @@ services:
     # Frontend
     web:
         build:  # 🔹 Добавляем сборку из репозитория
-            context: ./web
+            context: .
+            dockerfile: web/Dockerfile
             args:
                 JITSI_GIT_REPO: https://github.com/sg12/jitsi-meet.git
                 JITSI_GIT_BRANCH: develop
