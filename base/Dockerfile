@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y git && \
     git clone --depth=1 --branch "$JITSI_GIT_BRANCH" "$JITSI_GIT_REPO" /opt/jitsi-meet && \
     rm -rf /var/lib/apt/lists/*
 
-COPY rootfs /
+COPY . /opt/jitsi-meet
 
 RUN \
     dpkgArch="$(dpkg --print-architecture)" && \
