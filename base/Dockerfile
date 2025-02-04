@@ -37,7 +37,7 @@ RUN \
     echo "deb https://download.jitsi.org $JITSI_RELEASE/" > /etc/apt/sources.list.d/jitsi.list && \
     echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
     apt-get update && \
-    apt-get dist-upgrade -y &&
+    apt-get dist-upgrade -y && \
     apt-cleanup && \
     chmod +x /usr/bin/tpl
 
