@@ -38,7 +38,7 @@ RUN \
     echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
     apt-get update && \
     apt-get dist-upgrade -y && \
-    apt-cleanup && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     chmod +x /usr/bin/tpl
 
 RUN [ "$JITSI_RELEASE" = "unstable" ] && \
