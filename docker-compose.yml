@@ -3,7 +3,14 @@ version: '3.5'
 services:
     # Frontend
     web:
-        image: jitsi/web:${JITSI_IMAGE_VERSION:-unstable}
+        web:
+            build:  # 🔹 Добавляем сборку из репозитория
+                context: .
+                dockerfile: base/Dockerfile
+                args:
+                    - JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
+                    - JITSI_GIT_BRANCH=develop
+
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '${HTTP_PORT}:80'
