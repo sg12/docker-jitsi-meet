@@ -3,7 +3,9 @@ version: '3.5'
 services:
     # Frontend
     web:
-        image: jitsi/web:${JITSI_IMAGE_VERSION:-unstable}
+        build:  # 🔹 Добавляем сборку из репозитория
+            context: .
+            dockerfile: web/Dockerfile
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '${HTTP_PORT}:80'
