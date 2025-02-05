@@ -4,6 +4,7 @@ server {
 
     server_name www.jitsi-connectrm-test.ru;
 
+    client_max_body_size 64m;
     client_header_buffer_size 64k;
     large_client_header_buffers 8 64k;
 
