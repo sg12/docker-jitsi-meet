@@ -6,6 +6,9 @@ server {
 
     large_client_header_buffers 4 32k;
 
+    client_header_buffer_size 64k;
+    large_client_header_buffers 8 64k;
+
     ssl_certificate /etc/ssl/certs/fullchain.pem;
     ssl_certificate_key /etc/ssl/private/privkey.pem;
 
