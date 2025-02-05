@@ -21,6 +21,6 @@ RUN apt-dpkg-wrap apt-get update && \
     rm -f /etc/nginx/conf.d/default.conf && \
     apt-cleanup
 
-EXPOSE 80 443
+EXPOSE 8443
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
