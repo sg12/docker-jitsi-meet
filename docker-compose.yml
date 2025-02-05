@@ -3,7 +3,12 @@ version: '3.5'
 services:
     # Frontend
     web:
-        image: jitsi/web:${JITSI_IMAGE_VERSION:-unstable}
+        build:  # 🔹 Сборка из репозитория
+            context: .  # Указываем корень репозитория, где находится Dockerfile
+            dockerfile: Dockerfile  # Указываем путь к вашему Dockerfile
+            args:
+                JITSI_GIT_REPO: https://github.com/sg12/jitsi-meet.git  # Ваш форк
+                JITSI_BRANCH: develop  # Ветка вашего форка
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '${HTTP_PORT}:80'
