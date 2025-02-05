@@ -21,6 +21,11 @@ RUN apt-dpkg-wrap apt-get update && \
     rm -f /etc/nginx/conf.d/default.conf && \
     apt-cleanup
 
+# Копируем кастомный конфиг nginx в контейнер
+COPY web/rootfs/etc/nginx/sites-available/default /etc/nginx/sites-available/default
+RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+
 EXPOSE 8443
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
