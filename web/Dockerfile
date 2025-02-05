@@ -26,7 +26,7 @@ COPY web/rootfs/etc/nginx/sites-available/default /etc/nginx/sites-available/def
 RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 
-EXPOSE 8443
+EXPOSE 8443 8000
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
 
