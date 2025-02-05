@@ -12,7 +12,8 @@ services:
 
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
-            - '8443:8443'
+            - '8443:8443'  # Прокси на 8443
+            - '8000:8000'  # Прокси на 8000 (если нужно слушать этот порт)
         volumes:
             - ${CONFIG}/web:/config:Z
             - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
