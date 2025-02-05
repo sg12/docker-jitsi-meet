@@ -4,6 +4,8 @@ server {
 
     server_name www.jitsi-connectrm-test.ru;
 
+    large_client_header_buffers 4 32k;
+
     ssl_certificate /etc/ssl/certs/fullchain.pem;
     ssl_certificate_key /etc/ssl/private/privkey.pem;
 
