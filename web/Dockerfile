@@ -12,13 +12,31 @@ RUN if [ ! -f "/bin/sh" ]; then ln -s /usr/bin/sh /bin/sh; fi
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
+# Добавляем ключи Debian
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y gnupg ca-certificates && \
+    mkdir -p /usr/share/keyrings && \
+    wget -qO - https://ftp-master.debian.org/keys/release-12.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg
+
+# Добавляем ключи Jitsi
+RUN mkdir -p /etc/apt/keyrings && \
+    wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor > /etc/apt/keyrings/jitsi.gpg
+
+# Добавляем репозитории
+RUN echo "deb [signed-by=/etc/apt/keyrings/jitsi.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" > /etc/apt/sources.list.d/debian-updates.list
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list
+
+# ✅ Исправлено обновление пакетов
+RUN apt-get update --allow-releaseinfo-change && apt-get dist-upgrade -y
+
+RUN apt-get install -y \
         git \
         apt-transport-https \
         apt-utils \
         ca-certificates \
-        gnupg \
         wget \
         dnsutils \
         cron \
@@ -30,15 +48,6 @@ RUN apt-get update && \
         vim \
         iputils-ping \
         net-tools
-
-# ✅ Исправлено добавление GPG-ключей для Jitsi
-RUN mkdir -p /etc/apt/keyrings && \
-    wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor > /etc/apt/keyrings/jitsi.gpg
-
-RUN echo "deb [signed-by=/etc/apt/keyrings/jitsi.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
-
-# ✅ Исправлено обновление пакетов
-RUN apt-get update --allow-releaseinfo-change && apt-get dist-upgrade -y
 
 # Устанавливаем s6-overlay
 RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz | tar xfz - -C /
