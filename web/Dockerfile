@@ -13,8 +13,8 @@ RUN if [ ! -f "/bin/sh" ]; then ln -s /usr/bin/sh /bin/sh; fi
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-RUN apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
         git \
         apt-transport-https \
         apt-utils \
@@ -53,8 +53,9 @@ RUN chmod +x /opt/acme.sh
 RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
 
-# Устанавливаем jitsi-meet-web-config
-RUN apt-dpkg-wrap apt-get -d install -y jitsi-meet-web-config && \
+# ✅ Исправляем установку jitsi-meet-web-config (убираем apt-dpkg-wrap)
+RUN apt-get update && \
+    apt-get install -y --download-only jitsi-meet-web-config && \
     dpkg -x /var/cache/apt/archives/jitsi-meet-web-config*.deb /tmp/pkg && \
     mv /tmp/pkg/usr/share/jitsi-meet-web-config/config.js /defaults && \
     rm -rf /tmp/pkg /var/cache/apt
