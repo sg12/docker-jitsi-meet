@@ -10,11 +10,14 @@ LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 # ✅ Устанавливаем GPG перед загрузкой ключей
 RUN apt-get update && apt-get install -y gnupg wget ca-certificates
 
-# ✅ Загружаем актуальные ключи
+# ✅ Загружаем ключи и проверяем их
 RUN mkdir -p /usr/share/keyrings && \
-    wget -qO - https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg && \
-    wget -qO - https://ftp-master.debian.org/keys/security-key-12.asc | gpg --dearmor > /usr/share/keyrings/debian-security-keyring.gpg && \
-    wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg
+    wget -qO /tmp/debian-key.asc https://ftp-master.debian.org/keys/archive-key-12.asc && \
+    test -s /tmp/debian-key.asc && cat /tmp/debian-key.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg && \
+    wget -qO /tmp/security-key.asc https://ftp-master.debian.org/keys/bookworm-security.asc && \
+    test -s /tmp/security-key.asc && cat /tmp/security-key.asc | gpg --dearmor > /usr/share/keyrings/debian-security-keyring.gpg && \
+    wget -qO /tmp/jitsi-key.asc https://download.jitsi.org/jitsi-key.gpg.key && \
+    test -s /tmp/jitsi-key.asc && cat /tmp/jitsi-key.asc | gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg
 
 # ✅ Обновляем `sources.list` с правильными `signed-by`
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
