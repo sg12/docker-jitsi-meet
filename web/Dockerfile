@@ -13,11 +13,14 @@ RUN apt-get update && apt-get install -y gnupg wget ca-certificates
 # ✅ Загружаем ключи и проверяем их
 RUN mkdir -p /usr/share/keyrings && \
     wget -qO /tmp/debian-key.asc https://ftp-master.debian.org/keys/archive-key-12.asc && \
-    test -s /tmp/debian-key.asc && cat /tmp/debian-key.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg && \
-    wget -qO /tmp/security-key.asc https://ftp-master.debian.org/keys/bookworm-security.asc && \
-    test -s /tmp/security-key.asc && cat /tmp/security-key.asc | gpg --dearmor > /usr/share/keyrings/debian-security-keyring.gpg && \
+    if [ ! -s /tmp/debian-key.asc ]; then echo "Ошибка загрузки archive-key-12.asc"; exit 1; fi && \
+    cat /tmp/debian-key.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg && \
+    wget -qO /tmp/security-key.asc https://ftp-master.debian.org/keys/security-key-12.asc && \
+    if [ ! -s /tmp/security-key.asc ]; then echo "Ошибка загрузки security-key-12.asc"; exit 1; fi && \
+    cat /tmp/security-key.asc | gpg --dearmor > /usr/share/keyrings/debian-security-keyring.gpg && \
     wget -qO /tmp/jitsi-key.asc https://download.jitsi.org/jitsi-key.gpg.key && \
-    test -s /tmp/jitsi-key.asc && cat /tmp/jitsi-key.asc | gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg
+    if [ ! -s /tmp/jitsi-key.asc ]; then echo "Ошибка загрузки jitsi-key.gpg.key"; exit 1; fi && \
+    cat /tmp/jitsi-key.asc | gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg
 
 # ✅ Обновляем `sources.list` с правильными `signed-by`
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
