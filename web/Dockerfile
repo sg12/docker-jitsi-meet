@@ -3,14 +3,13 @@ ARG JITSI_BRANCH
 
 FROM jitsi/base:stable
 
+# Принудительно используем /usr/bin/sh
+SHELL ["/usr/bin/sh", "-c"]
+
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
-# Проверяем, есть ли /bin/sh или /bin/bash, создаём символическую ссылку при необходимости
-RUN if [ ! -f "/bin/sh" ]; then \
-        if [ -f "/bin/busybox" ]; then ln -s /bin/busybox /bin/sh; \
-        elif [ -f "/bin/dash" ]; then ln -s /bin/dash /bin/sh; \
-        else echo "Нет подходящей оболочки!"; exit 1; fi; \
-    fi
+# Исправляем проблему с отсутствием /bin/sh
+RUN if [ ! -f "/bin/sh" ]; then ln -s /usr/bin/sh /bin/sh; fi
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
