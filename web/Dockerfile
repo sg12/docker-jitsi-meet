@@ -7,16 +7,16 @@ SHELL ["/usr/bin/sh", "-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
-# ✅ Очищаем старые GPG-ключи и конфликты в sources.list
-RUN rm -rf /etc/apt/sources.list.d/* /usr/share/keyrings/*.gpg && \
-    mkdir -p /usr/share/keyrings /etc/apt/keyrings
+# ✅ Устанавливаем GPG перед загрузкой ключей
+RUN apt-get update && apt-get install -y gnupg wget ca-certificates
 
-# ✅ Загружаем GPG-ключи для Debian и Jitsi
-RUN wget -qO - https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor | tee /usr/share/keyrings/debian-archive-keyring.gpg > /dev/null && \
-    wget -qO - https://ftp-master.debian.org/keys/bookworm-security-12.asc | gpg --dearmor | tee /usr/share/keyrings/debian-security-keyring.gpg > /dev/null && \
-    wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor | tee /usr/share/keyrings/jitsi-keyring.gpg > /dev/null
+# ✅ Загружаем актуальные ключи
+RUN mkdir -p /usr/share/keyrings && \
+    wget -qO - https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg && \
+    wget -qO - https://ftp-master.debian.org/keys/security-key-12.asc | gpg --dearmor > /usr/share/keyrings/debian-security-keyring.gpg && \
+    wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg
 
-# ✅ Добавляем репозитории с корректными `signed-by`
+# ✅ Обновляем `sources.list` с правильными `signed-by`
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-security-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list
@@ -24,7 +24,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download
 
 # ✅ Устанавливаем базовые пакеты
 RUN apt-get update --allow-releaseinfo-change && \
-    apt-get install -y --allow-change-held-packages apt-transport-https ca-certificates gnupg wget
+    apt-get install -y --allow-change-held-packages apt-transport-https ca-certificates
 
 RUN apt-get install -y \
         git \
@@ -68,6 +68,7 @@ RUN apt-get update && \
     mv /tmp/pkg/usr/share/jitsi-meet-web-config/config.js /defaults && \
     rm -rf /tmp/pkg /var/cache/apt
 
+# Открываем нужные порты
 EXPOSE 80 443 8443 8000
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
