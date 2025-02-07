@@ -3,10 +3,14 @@ ARG JITSI_BRANCH
 
 FROM jitsi/base:stable
 
-# Используем bash вместо sh, если /bin/sh отсутствует
-SHELL ["/bin/bash", "-c"]
-
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
+
+# Проверяем, есть ли /bin/sh или /bin/bash, создаём символическую ссылку при необходимости
+RUN if [ ! -f "/bin/sh" ]; then \
+        if [ -f "/bin/busybox" ]; then ln -s /bin/busybox /bin/sh; \
+        elif [ -f "/bin/dash" ]; then ln -s /bin/dash /bin/sh; \
+        else echo "Нет подходящей оболочки!"; exit 1; fi; \
+    fi
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
@@ -28,9 +32,6 @@ RUN apt-dpkg-wrap apt-get update && \
         vim \
         iputils-ping \
         net-tools
-
-# Проверяем, есть ли /bin/sh, если нет - добавляем bash
-RUN if [ ! -f "/bin/sh" ]; then ln -s /bin/bash /bin/sh; fi
 
 # Устанавливаем s6-overlay
 RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz | tar xfz - -C /
