@@ -12,12 +12,12 @@ RUN if [ ! -f "/bin/sh" ]; then ln -s /usr/bin/sh /bin/sh; fi
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-# ✅ Удаляем дублирующиеся файлы перед настройкой репозиториев
-RUN rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
+# ✅ Удаляем старые ключи перед установкой новых
+RUN rm -rf /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d /usr/share/keyrings/debian-security-keyring.gpg
 
 # ✅ Устанавливаем GPG и сертификаты
 RUN apt-get update && \
-    apt-get install -y gnupg ca-certificates wget
+    apt-get install -y gnupg ca-certificates debian-archive-keyring wget
 
 # ✅ Загружаем ключи Debian и Jitsi правильно
 RUN mkdir -p /usr/share/keyrings /etc/apt/keyrings && \
@@ -25,9 +25,9 @@ RUN mkdir -p /usr/share/keyrings /etc/apt/keyrings && \
     cat /tmp/release-12.asc | gpg --dearmor | tee /usr/share/keyrings/debian-archive-keyring.gpg > /dev/null && \
     rm -f /tmp/release-12.asc
 
-RUN wget -qO /tmp/bookworm-security.asc https://ftp-master.debian.org/keys/bookworm-security.asc && \
-    cat /tmp/bookworm-security.asc | gpg --dearmor | tee /usr/share/keyrings/debian-security-keyring.gpg > /dev/null && \
-    rm -f /tmp/bookworm-security.asc
+RUN wget -qO /tmp/security-archive-keyring.gpg https://ftp-master.debian.org/keys/security-archive-keyring.gpg && \
+    cat /tmp/security-archive-keyring.gpg | gpg --dearmor | tee /usr/share/keyrings/debian-security-keyring.gpg > /dev/null && \
+    rm -f /tmp/security-archive-keyring.gpg
 
 RUN wget -qO /tmp/jitsi-key.gpg https://download.jitsi.org/jitsi-key.gpg.key && \
     cat /tmp/jitsi-key.gpg | gpg --dearmor | tee /etc/apt/keyrings/jitsi.gpg > /dev/null && \
