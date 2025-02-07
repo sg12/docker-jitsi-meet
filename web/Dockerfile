@@ -22,6 +22,12 @@ RUN mkdir -p /usr/share/keyrings && \
     if [ ! -s /tmp/jitsi-key.asc ]; then echo "Ошибка загрузки jitsi-key.gpg.key"; exit 1; fi && \
     gpg --batch --yes --dearmor -o /usr/share/keyrings/jitsi-keyring.gpg /tmp/jitsi-key.asc
 
+# ✅ Удаляем дубликаты, если они есть
+RUN rm -f /etc/apt/sources.list.d/backports.list \
+    /etc/apt/sources.list.d/debian-backports.list \
+    /etc/apt/sources.list.d/debian-security.list \
+    /etc/apt/sources.list.d/debian.sources
+
 # ✅ Обновляем `sources.list` с правильными `signed-by`
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list
@@ -68,11 +74,11 @@ RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
 
 # ✅ Устанавливаем `jitsi-meet-web-config`
-RUN apt-get update && \
-    apt-get install -y --download-only jitsi-meet-web-config && \
-    dpkg -x /var/cache/apt/archives/jitsi-meet-web-config*.deb /tmp/pkg && \
-    mv /tmp/pkg/usr/share/jitsi-meet-web-config/config.js /defaults && \
-    rm -rf /tmp/pkg /var/cache/apt
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update && \
+    apt-get install -y jitsi-meet-web-config && \
+    cp /usr/share/jitsi-meet-web-config/config.js /defaults
 
 # ✅ Открываем нужные порты
 EXPOSE 80 443 8443 8000
