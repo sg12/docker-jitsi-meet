@@ -12,27 +12,13 @@ RUN apt-get update && apt-get install -y gnupg wget ca-certificates
 
 # ✅ Загружаем ключи и проверяем их
 RUN mkdir -p /usr/share/keyrings && \
-    wget -qO /tmp/debian-key.asc https://ftp-master.debian.org/keys/archive-key-12.asc && \
-    if [ ! -s /tmp/debian-key.asc ]; then echo "Ошибка загрузки archive-key-12.asc"; exit 1; fi && \
-    gpg --batch --yes --dearmor -o /usr/share/keyrings/debian-archive-keyring.gpg /tmp/debian-key.asc && \
-    wget -qO /tmp/security-key.asc https://ftp-master.debian.org/keys/archive-key-12-security.asc && \
-    if [ ! -s /tmp/security-key.asc ]; then echo "Ошибка загрузки archive-key-12-security.asc"; exit 1; fi && \
-    gpg --batch --yes --dearmor -o /usr/share/keyrings/debian-archive-keyring-security.gpg /tmp/security-key.asc && \
-    wget -qO /tmp/jitsi-key.asc https://download.jitsi.org/jitsi-key.gpg.key && \
-    if [ ! -s /tmp/jitsi-key.asc ]; then echo "Ошибка загрузки jitsi-key.gpg.key"; exit 1; fi && \
-    gpg --batch --yes --dearmor -o /usr/share/keyrings/jitsi-keyring.gpg /tmp/jitsi-key.asc
-
-# ✅ Удаляем дубликаты, если они есть
-RUN rm -f /etc/apt/sources.list.d/backports.list \
-    /etc/apt/sources.list.d/debian-backports.list \
-    /etc/apt/sources.list.d/debian-security.list \
-    /etc/apt/sources.list.d/debian.sources
-
-# ✅ Обновляем `sources.list` с правильными `signed-by`
-RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
-RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list
-RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list
-RUN echo "deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
+    wget -qO /usr/share/keyrings/debian-archive-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12.asc && \
+    wget -qO /usr/share/keyrings/debian-security-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12-security.asc && \
+    wget -qO /usr/share/keyrings/jitsi-keyring.gpg https://download.jitsi.org/jitsi-key.gpg.key && \
+    echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list && \
+    echo "deb [signed-by=/usr/share/keyrings/debian-security-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list && \
+    echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list && \
+    echo "deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
 
 # ✅ Устанавливаем базовые пакеты
 RUN apt-get update --allow-releaseinfo-change && \
@@ -63,7 +49,7 @@ RUN if [ -d "/usr/share/jitsi-meet" ]; then rm -rf /usr/share/jitsi-meet; fi && 
     git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet
 
 # ✅ Удаляем кеши
-RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # ✅ Добавляем acme.sh
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
@@ -74,10 +60,8 @@ RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
 
 # ✅ Устанавливаем `jitsi-meet-web-config`
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get update && \
-    apt-get install -y jitsi-meet-web-config && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends jitsi-meet-web-config && \
     cp /usr/share/jitsi-meet-web-config/config.js /defaults
 
 # ✅ Открываем нужные порты
