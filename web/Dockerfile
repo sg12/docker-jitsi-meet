@@ -36,10 +36,6 @@ RUN chmod +x /opt/acme.sh
 RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
 
-# Копируем кастомный конфиг nginx в контейнер
-COPY web/rootfs/etc/nginx/sites-available/default /etc/nginx/sites-available/default
-RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
 # Открываем порты взаимодействия
 EXPOSE 8443 8000
 
