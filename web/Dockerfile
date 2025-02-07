@@ -68,7 +68,6 @@ RUN apt-get update && \
     mv /tmp/pkg/usr/share/jitsi-meet-web-config/config.js /defaults && \
     rm -rf /tmp/pkg /var/cache/apt
 
-# Открываем нужные порты
 EXPOSE 80 443 8443 8000
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
