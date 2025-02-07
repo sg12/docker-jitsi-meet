@@ -3,12 +3,11 @@ ARG JITSI_BRANCH
 
 FROM jitsi/base:stable
 
-# Принудительно используем /usr/bin/sh
 SHELL ["/usr/bin/sh", "-c"]
 
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
-# Исправляем проблему с отсутствием /bin/sh
+# Исправляем отсутствие /bin/sh
 RUN if [ ! -f "/bin/sh" ]; then ln -s /usr/bin/sh /bin/sh; fi
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
@@ -32,6 +31,15 @@ RUN apt-get update && \
         iputils-ping \
         net-tools
 
+# ✅ Исправлено добавление GPG-ключей для Jitsi
+RUN mkdir -p /etc/apt/keyrings && \
+    wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor > /etc/apt/keyrings/jitsi.gpg
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/jitsi.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
+
+# ✅ Исправлено обновление пакетов
+RUN apt-get update --allow-releaseinfo-change && apt-get dist-upgrade -y
+
 # Устанавливаем s6-overlay
 RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz | tar xfz - -C /
 
@@ -53,7 +61,7 @@ RUN chmod +x /opt/acme.sh
 RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
 
-# ✅ Исправляем установку jitsi-meet-web-config (убираем apt-dpkg-wrap)
+# ✅ Исправлено: убираем `apt-dpkg-wrap` и правим установку jitsi-meet-web-config
 RUN apt-get update && \
     apt-get install -y --download-only jitsi-meet-web-config && \
     dpkg -x /var/cache/apt/archives/jitsi-meet-web-config*.deb /tmp/pkg && \
