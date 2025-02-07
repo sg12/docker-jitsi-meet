@@ -2,7 +2,7 @@ services:
     # Frontend
     web:
         build: ../jitsi-meet
-        restart: unless-stoped
+        restart: unless-stopped
         ports:
             - 8080:80
             - 8443:443
