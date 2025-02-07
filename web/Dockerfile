@@ -15,21 +15,19 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 # ✅ Удаляем старые ключи перед установкой новых
 RUN rm -rf /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d /usr/share/keyrings/*.gpg
 
-# ✅ Устанавливаем GPG и сертификаты
-RUN apt-get update && \
-    apt-get install -y gnupg ca-certificates debian-archive-keyring wget
+# ✅ Устанавливаем GPG и сертификаты + debian-archive-keyring
+RUN apt-get update && apt-get install -y gnupg ca-certificates debian-archive-keyring wget --allow-change-held-packages
 
 # ✅ Загружаем ключи Debian и Jitsi правильно
 RUN mkdir -p /usr/share/keyrings /etc/apt/keyrings && \
-    wget -qO - https://ftp-master.debian.org/keys/release-12.asc | gpg --dearmor | tee /usr/share/keyrings/debian-archive-keyring.gpg > /dev/null && \
+    wget -qO - https://ftp-master.debian.org/keys/release-12.asc | gpg --dearmor | tee /usr/share/keyrings/debian-release-keyring.gpg > /dev/null && \
     wget -qO - https://ftp-master.debian.org/keys/security-archive-keyring.gpg | gpg --dearmor | tee /usr/share/keyrings/debian-security-keyring.gpg > /dev/null && \
-    wget -qO - https://ftp-master.debian.org/keys/bookworm-archive-keyring.gpg | gpg --dearmor | tee /usr/share/keyrings/debian-backports-keyring.gpg > /dev/null && \
     wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor | tee /usr/share/keyrings/jitsi-keyring.gpg > /dev/null
 
 # ✅ Добавляем репозитории с `signed-by`
-RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-release-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-security-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list
-RUN echo "deb [signed-by=/usr/share/keyrings/debian-backports-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-release-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list
 RUN echo "deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
 
 # ✅ Ожидание и обновление пакетов
