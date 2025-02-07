@@ -21,11 +21,9 @@ RUN apt-dpkg-wrap apt-get update && \
         curl \
         jq
 
-# Проверка аргументов перед клонированием
-RUN echo "Cloning from $JITSI_GIT_REPO, branch $JITSI_BRANCH"
-
-RUN git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet || \
-    (echo "Ошибка: Репозиторий не найден или неверный branch"; exit 1)
+# Проверяем, существует ли папка, и очищаем её перед клонированием
+RUN if [ -d "/usr/share/jitsi-meet" ]; then rm -rf /usr/share/jitsi-meet; fi && \
+    git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet
 
 # Удаляем лишние файлы, чтобы уменьшить размер образа
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
