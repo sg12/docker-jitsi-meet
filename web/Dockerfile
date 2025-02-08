@@ -15,6 +15,7 @@ RUN mkdir -p /etc/apt/keyrings && \
     wget -qO /etc/apt/keyrings/debian-archive-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12.asc && \
     wget -qO /etc/apt/keyrings/debian-security-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12-security.asc && \
     wget -qO /etc/apt/keyrings/jitsi-keyring.gpg https://download.jitsi.org/jitsi-key.gpg.key && \
+    rm -rf /etc/apt/sources.list.d/* && \
     echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list && \
     echo "deb [signed-by=/etc/apt/keyrings/debian-security-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list && \
     echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list && \
