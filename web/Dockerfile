@@ -48,11 +48,8 @@ RUN wget -qO /usr/bin/frep https://github.com/subchen/frep/releases/download/v1.
 RUN if [ -d "/usr/share/jitsi-meet" ]; then rm -rf /usr/share/jitsi-meet; fi && \
     git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet
 
-# ✅ Проверяем наличие `prosody.cfg.lua` и копируем в `/config`
-RUN if [ -f "/usr/share/jitsi-meet/resources/prosody.cfg.lua" ]; then \
-    cp /usr/share/jitsi-meet/resources/prosody.cfg.lua /config/prosody.cfg.lua; \
-    else echo "WARNING: prosody.cfg.lua not found! Using default config."; \
-    fi
+# ✅ Копируем конфиг prosody в нужное место
+COPY prosody/rootfs/defaults/prosody.cfg.lua /config/prosody.cfg.lua
 
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
