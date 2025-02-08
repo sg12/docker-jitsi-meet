@@ -3,6 +3,8 @@ version: '3.5'
 services:
     # Frontend
     web:
+        env_file:
+          - .env
         build:  # 🔹 Добавляем сборку из репозитория
             context: .
             dockerfile: web/Dockerfile
@@ -200,6 +202,8 @@ services:
 
     # XMPP server
     prosody:
+        env_file:
+          - .env
         image: jitsi/prosody:${JITSI_IMAGE_VERSION:-unstable}
         restart: ${RESTART_POLICY:-unless-stopped}
         expose:
@@ -212,8 +216,6 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
-        env_file:
-            - .env
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
