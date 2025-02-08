@@ -483,8 +483,9 @@ services:
             - JVB_OCTO_RELAY_ID
             - JVB_REQUIRE_VALID_ADDRESS
             - JVB_USE_USRSCTP
-            - JVB_WS_DOMAIN
-            - JVB_WS_SERVER_ID
+            - JVB_ENABLE_WEBSOCKETS=true
+            - JVB_WS_DOMAIN=meet.jitsi
+            - JVB_WS_SERVER_ID=jvb1
             - JVB_WS_TLS
             - JVB_XMPP_AUTH_DOMAIN
             - JVB_XMPP_INTERNAL_MUC_DOMAIN
