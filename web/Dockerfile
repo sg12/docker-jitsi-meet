@@ -36,7 +36,8 @@ RUN apt-get install -y \
         jq \
         vim \
         iputils-ping \
-        net-tools
+        net-tools \
+        gettext # ✅ Добавлен для envsubst
 
 # ✅ Устанавливаем s6-overlay
 RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz | tar xfz - -C /
@@ -56,6 +57,10 @@ COPY prosody/rootfs/defaults/prosody.cfg.lua /config/prosody.cfg.lua
 
 # ✅ Генерируем prosody.cfg.lua с помощью frep
 RUN /usr/bin/frep /config/prosody.cfg.lua --overwrite /config/prosody.cfg.lua
+
+# ✅ Копируем дефолтный конфиг Nginx и генерируем финальный файл с подставленными переменными
+COPY web/rootfs/defaults/nginx.conf /config/nginx.conf.template
+RUN envsubst < /config/nginx.conf.template > /etc/nginx/nginx.conf
 
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
