@@ -8,7 +8,7 @@ SHELL ["/usr/bin/sh", "-c"]
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
 # ✅ Устанавливаем GPG перед загрузкой ключей
-RUN apt-get update && apt-get install -y gnupg wget ca-certificates gettext-base
+RUN apt-get update && apt-get install -y gnupg wget ca-certificates
 
 # ✅ Загружаем ключи и проверяем их
 RUN mkdir -p /etc/apt/keyrings && \
@@ -23,7 +23,7 @@ RUN mkdir -p /etc/apt/keyrings && \
 
 # ✅ Устанавливаем базовые пакеты
 RUN apt-get update --allow-releaseinfo-change && \
-    apt-get install -y --allow-change-held-packages apt-transport-https ca-certificates
+    apt-get install -y --allow-change-held-packages apt-transport-https ca-certificates gettext-base
 
 RUN apt-get install -y \
         git \
@@ -36,8 +36,7 @@ RUN apt-get install -y \
         jq \
         vim \
         iputils-ping \
-        net-tools \
-        gettext-base  # Добавляем для envsubst
+        net-tools
 
 # ✅ Устанавливаем s6-overlay
 RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz | tar xfz - -C /
@@ -45,7 +44,7 @@ RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v
 # ✅ Устанавливаем frep
 RUN wget -qO /usr/bin/frep https://github.com/subchen/frep/releases/download/v1.3.11/frep-1.3.11-linux-amd64 && chmod +x /usr/bin/frep
 
-# ✅ Проверяем, существует ли папка, и очищаем её перед клонированием
+# ✅ Проверяем, существует ли папка, и очищаем ёе перед клонированием
 RUN if [ -d "/usr/share/jitsi-meet" ]; then rm -rf /usr/share/jitsi-meet; fi && \
     git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet
 
@@ -58,9 +57,6 @@ COPY prosody/rootfs/defaults/prosody.cfg.lua /config/prosody.cfg.lua
 # ✅ Генерируем prosody.cfg.lua с помощью frep
 RUN /usr/bin/frep /config/prosody.cfg.lua --overwrite /config/prosody.cfg.lua
 
-# ✅ Генерируем `nginx.conf` с актуальными переменными окружения
-RUN envsubst < /usr/share/jitsi-meet/web/rootfs/defaults/nginx.conf > /usr/share/jitsi-meet/web/rootfs/defaults/nginx_rendered.conf
-
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -68,12 +64,15 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 RUN chmod +x /opt/acme.sh
 
+# ✅ Копируем nginx.conf в контейнер
+COPY web/rootfs/defaults/nginx.conf /usr/share/jitsi-meet/web/rootfs/defaults/nginx.conf
+
+# ✅ Генерируем nginx_rendered.conf
+RUN envsubst < /usr/share/jitsi-meet/web/rootfs/defaults/nginx.conf > /usr/share/jitsi-meet/web/rootfs/defaults/nginx_rendered.conf
+
 # ✅ Переносим дефолтные настройки Jitsi
 RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
-
-# ✅ Копируем рендеренный `nginx.conf` в контейнер
-COPY /usr/share/jitsi-meet/web/rootfs/defaults/nginx_rendered.conf /etc/nginx/nginx.conf
 
 # ✅ Открываем нужные порты
 EXPOSE 80 443 8443 8000
