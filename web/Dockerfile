@@ -11,14 +11,14 @@ LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 RUN apt-get update && apt-get install -y gnupg wget ca-certificates
 
 # ✅ Загружаем ключи и проверяем их
-RUN mkdir -p /usr/share/keyrings && \
-    wget -qO /usr/share/keyrings/debian-archive-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12.asc && \
-    wget -qO /usr/share/keyrings/debian-security-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12-security.asc && \
-    wget -qO /usr/share/keyrings/jitsi-keyring.gpg https://download.jitsi.org/jitsi-key.gpg.key && \
-    echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list && \
-    echo "deb [signed-by=/usr/share/keyrings/debian-security-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list && \
-    echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list && \
-    echo "deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
+RUN mkdir -p /etc/apt/keyrings && \
+    wget -qO /etc/apt/keyrings/debian-archive-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12.asc && \
+    wget -qO /etc/apt/keyrings/debian-security-keyring.gpg https://ftp-master.debian.org/keys/archive-key-12-security.asc && \
+    wget -qO /etc/apt/keyrings/jitsi-keyring.gpg https://download.jitsi.org/jitsi-key.gpg.key && \
+    echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/debian.list && \
+    echo "deb [signed-by=/etc/apt/keyrings/debian-security-keyring.gpg] http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/debian-security.list && \
+    echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/debian-backports.list && \
+    echo "deb [signed-by=/etc/apt/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/" > /etc/apt/sources.list.d/jitsi.list
 
 # ✅ Устанавливаем базовые пакеты
 RUN apt-get update --allow-releaseinfo-change && \
@@ -30,7 +30,6 @@ RUN apt-get install -y \
         dnsutils \
         cron \
         nginx-extras \
-        jitsi-meet-web \
         socat \
         curl \
         jq \
@@ -58,11 +57,6 @@ RUN chmod +x /opt/acme.sh
 # ✅ Переносим дефолтные настройки Jitsi
 RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
     rm -f /etc/nginx/conf.d/default.conf
-
-# ✅ Устанавливаем `jitsi-meet-web-config`
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends jitsi-meet-web-config && \
-    cp /usr/share/jitsi-meet-web-config/config.js /defaults
 
 # ✅ Открываем нужные порты
 EXPOSE 80 443 8443 8000
