@@ -48,6 +48,10 @@ RUN wget -qO /usr/bin/frep https://github.com/subchen/frep/releases/download/v1.
 RUN if [ -d "/usr/share/jitsi-meet" ]; then rm -rf /usr/share/jitsi-meet; fi && \
     git clone --depth 1 -b "${JITSI_BRANCH:-develop}" "${JITSI_GIT_REPO:-https://github.com/sg12/jitsi-meet.git}" /usr/share/jitsi-meet
 
+# ✅ Копируем конфигурации Prosody и Jitsi
+COPY resources/prosody.cfg.lua /config/prosody.cfg.lua
+COPY resources/config.js /config/config.js
+
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
