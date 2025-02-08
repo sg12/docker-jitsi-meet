@@ -5,6 +5,8 @@ services:
     web:
         env_file:
           - .env
+        extra_hosts:
+          - "meet.jitsi:127.0.0.1"
         build:  # 🔹 Добавляем сборку из репозитория
             context: .
             dockerfile: web/Dockerfile
@@ -441,6 +443,8 @@ services:
 
     # Video bridge
     jvb:
+        extra_hosts:
+          - "meet.jitsi:127.0.0.1"
         image: jitsi/jvb:${JITSI_IMAGE_VERSION:-unstable}
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
