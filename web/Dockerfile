@@ -51,6 +51,9 @@ RUN if [ -d "/usr/share/jitsi-meet" ]; then rm -rf /usr/share/jitsi-meet; fi && 
 # ✅ Копируем конфиг prosody в нужное место
 COPY prosody/rootfs/defaults/prosody.cfg.lua /prosody/rootfs/defaults/prosody.cfg.lua
 
+# ✅ Создаём директорию /config перед генерацией
+RUN mkdir -p /config
+
 # ✅ Генерируем prosody.cfg.lua с помощью frep
 RUN /usr/bin/frep /prosody/rootfs/defaults/prosody.cfg.lua --env > /config/prosody.cfg.lua
 
