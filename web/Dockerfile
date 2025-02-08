@@ -8,7 +8,7 @@ SHELL ["/usr/bin/sh", "-c"]
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
 # ✅ Устанавливаем GPG перед загрузкой ключей
-RUN apt-get update && apt-get install -y gnupg wget ca-certificates
+RUN apt-get update && apt-get install -y gnupg wget ca-certificates gettext-base
 
 # ✅ Загружаем ключи и проверяем их
 RUN mkdir -p /etc/apt/keyrings && \
@@ -37,7 +37,7 @@ RUN apt-get install -y \
         vim \
         iputils-ping \
         net-tools \
-        gettext # ✅ Добавлен для envsubst
+        gettext-base  # Добавляем для envsubst
 
 # ✅ Устанавливаем s6-overlay
 RUN wget -qO - https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz | tar xfz - -C /
@@ -58,16 +58,15 @@ COPY prosody/rootfs/defaults/prosody.cfg.lua /config/prosody.cfg.lua
 # ✅ Генерируем prosody.cfg.lua с помощью frep
 RUN /usr/bin/frep /config/prosody.cfg.lua --overwrite /config/prosody.cfg.lua
 
-# ✅ Копируем дефолтный конфиг Nginx и генерируем финальный файл с подставленными переменными
-COPY web/rootfs/defaults/nginx.conf /config/nginx.conf.template
-RUN envsubst < /config/nginx.conf.template > /etc/nginx/nginx.conf
-
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # ✅ Добавляем acme.sh
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 RUN chmod +x /opt/acme.sh
+
+# ✅ Генерируем `nginx_rendered.conf`
+RUN envsubst < /usr/share/jitsi-meet/web/rootfs/defaults/nginx.conf > /usr/share/jitsi-meet/web/rootfs/defaults/nginx_rendered.conf
 
 # ✅ Переносим дефолтные настройки Jitsi
 RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
@@ -77,5 +76,8 @@ RUN mv /usr/share/jitsi-meet/interface_config.js /defaults && \
 EXPOSE 80 443 8443 8000
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
+
+# ✅ Копируем рендеренный `nginx.conf` в контейнер
+COPY /usr/share/jitsi-meet/web/rootfs/defaults/nginx_rendered.conf /etc/nginx/nginx.conf
 
 ENTRYPOINT ["/init"]
