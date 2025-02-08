@@ -55,7 +55,7 @@ RUN mkdir -p /config
 COPY prosody/rootfs/defaults/prosody.cfg.lua /config/prosody.cfg.lua
 
 # ✅ Генерируем prosody.cfg.lua с помощью frep
-RUN /usr/bin/frep /config/prosody.cfg.lua --overwrite
+RUN /usr/bin/frep /config/prosody.cfg.lua --overwrite /config/prosody.cfg.lua
 
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
