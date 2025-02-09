@@ -5,7 +5,11 @@ services:
         build:
             context: ./base
             dockerfile: Dockerfile
+            args:
+                SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY}
         image: custom-jitsi-base  # 📌 Локальное имя для удобства (можно изменить)
+        environment:
+            - SSH_PRIVATE_KEY=${SSH_PRIVATE_KEY}
     # Frontend
     web:
         env_file:
