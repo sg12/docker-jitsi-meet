@@ -14,13 +14,13 @@ server {
 
 {{ if not (.Env.DISABLE_HTTPS | default "0" | toBool) }}
 server {
-	listen 443 ssl http2;
+	listen 8443 ssl http2;  # 📌 Исправляем порт с 443 на 8443, так как в `docker-compose.yml` указан 8443
 	
 	{{ if .Env.ENABLE_IPV6 | default "1" | toBool }}
-	listen [::]:443 ssl http2;
+	listen [::]:8443 ssl http2;
 	{{ end }}
 
-	# Подключаем SSL-сертификаты напрямую
+	# Указываем правильные сертификаты
 	ssl_certificate /config/keys/cert.crt;
 	ssl_certificate_key /config/keys/cert.key;
 
