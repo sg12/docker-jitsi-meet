@@ -17,7 +17,12 @@ RUN \
         *) echo "unsupported architecture"; exit 1 ;; \
     esac && \
     apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client && \
+    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client lsb-release && \
+    # Устанавливаем Node.js и npm
+    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-dpkg-wrap apt-get install -y nodejs && \
+    # Проверяем, что npm установлен
+    npm --version && \
     # Клонируем репозиторий с использованием HTTPS
     git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet || { echo "Git clone failed"; exit 1; } && \
     cd /usr/src/jitsi-meet && \
