@@ -3,6 +3,7 @@ FROM docker.io/library/debian:bookworm-slim
 ARG JITSI_RELEASE=stable
 ARG JITSI_GIT_REPO="git@github.com:sg12/jitsi-meet.git"  # Ваш репозиторий на GitHub
 ARG JITSI_BRANCH=develop  # Ветка для клонирования, измените по необходимости
+ARG SSH_PRIVATE_KEY  # Добавляем аргумент для приватного ключа
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
@@ -23,8 +24,7 @@ RUN \
     # Настроим использование SSH-агента
     mkdir -p /root/.ssh && \
     chmod 700 /root/.ssh && \
-    # Здесь можно вставить ваш публичный ключ вручную или через сборку
-    # Добавьте ваш SSH-ключ в контейнер
+    # Добавляем ваш SSH-ключ в контейнер
     echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa && \
     # Клонируем репозиторий из GitHub
