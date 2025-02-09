@@ -17,6 +17,9 @@ RUN \
     esac && \
     apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client && \
+    # Добавляем ключ GitHub в known_hosts
+    mkdir -p ~/.ssh && \
+    ssh-keyscan github.com >> ~/.ssh/known_hosts && \
     # Клонируем репозиторий из GitHub
     git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
