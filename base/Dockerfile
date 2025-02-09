@@ -1,9 +1,6 @@
 FROM docker.io/library/debian:bookworm-slim
 
 ARG JITSI_RELEASE=stable
-ARG JITSI_GIT_REPO="git@github.com:sg12/jitsi-meet.git"  # Ваш репозиторий на GitHub
-ARG JITSI_BRANCH=develop  # Ветка для клонирования, измените по необходимости
-
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 COPY rootfs /
@@ -16,13 +13,7 @@ RUN \
         *) echo "unsupported architecture"; exit 1 ;; \
     esac && \
     apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git && \
-    # Клонируем ваш репозиторий с GitHub
-    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
-    cd /usr/src/jitsi-meet && \
-    npm install && \
-    make && \
-    # Устанавливаем tpl
+    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl && \
     wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
     # Workaround S6 bug when /bin is a symlink
     wget -qO /tmp/s6.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz && \
