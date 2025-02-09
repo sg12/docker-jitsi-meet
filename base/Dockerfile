@@ -11,11 +11,11 @@ RUN \
         "arm64") TPL_ARCH=arm64; S6_ARCH=aarch64 ;; \
         *) echo "unsupported architecture"; exit 1 ;; \
     esac && \
-    apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git npm make && \
+    apt-get update && \
+    apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git npm make && \
     wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
     chmod +x /usr/bin/tpl && \
-    apt-cleanup
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем s6-overlay
 RUN wget -qO /tmp/s6.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz && \
