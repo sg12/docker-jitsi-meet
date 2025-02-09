@@ -24,7 +24,6 @@ RUN \
     cp /tmp/s6/bin/execlineb /usr/bin/ && \
     rm -rf /tmp/s6* && \
     wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmour > /etc/apt/trusted.gpg.d/jitsi.gpg && \
-    echo "deb https://download.jitsi.org $JITSI_RELEASE/" > /etc/apt/sources.list.d/jitsi.list && \
     echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
     apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get dist-upgrade -y && \
@@ -36,5 +35,24 @@ RUN [ "$JITSI_RELEASE" = "unstable" ] && \
     apt-dpkg-wrap apt-get install -y jq procps curl vim iputils-ping net-tools && \
     apt-cleanup || \
     true
+
+# ❌ Удаляем официальный репозиторий Jitsi
+RUN rm -f /etc/apt/sources.list.d/jitsi.list
+
+# 📌 Клонируем ваш форк Jitsi Meet
+ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
+ARG JITSI_BRANCH=develop-5
+
+RUN apt-dpkg-wrap apt-get install -y git npm make && \
+    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
+    cd /usr/src/jitsi-meet && \
+    npm install && \
+    make
+
+# 📌 Копируем собранный Jitsi Meet в нужное место
+RUN cp -r /usr/src/jitsi-meet /usr/share/jitsi-meet
+
+# 📌 Очищаем ненужные файлы
+RUN rm -rf /usr/src/jitsi-meet/.git /usr/src/jitsi-meet/node_modules
 
 ENTRYPOINT [ "/init" ]
