@@ -1,7 +1,7 @@
 FROM docker.io/library/debian:bookworm-slim
 
 ARG JITSI_RELEASE=stable
-ARG JITSI_GIT_REPO="git@github.com:sg12/jitsi-meet.git"
+ARG JITSI_GIT_REPO="https://github.com/sg12/jitsi-meet.git"  # Используем HTTPS
 ARG JITSI_BRANCH=develop
 ARG SSH_PRIVATE_KEY
 
@@ -18,15 +18,12 @@ RUN \
     esac && \
     apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client && \
-    mkdir -p /root/.ssh && \
-    ssh-keyscan github.com >> /root/.ssh/known_hosts && \
-    chmod 700 /root/.ssh && \
-    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa && \
-    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
+    # Клонируем репозиторий с использованием HTTPS
+    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet || { echo "Git clone failed"; exit 1; } && \
     cd /usr/src/jitsi-meet && \
     npm install && \
     make && \
+    # Устанавливаем tpl
     wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
     wget -qO /tmp/s6.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz && \
     mkdir /tmp/s6 && \
