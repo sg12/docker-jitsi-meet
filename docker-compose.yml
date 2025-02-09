@@ -1,6 +1,11 @@
 version: '3.5'
 
 services:
+    base:
+        build:
+            context: .
+            dockerfile: base/Dockerfile  # 📌 Указываем, что это базовый образ
+        image: custom-jitsi-base  # 📌 Локальное имя для удобства (можно изменить)
     # Frontend
     web:
         env_file:
@@ -13,6 +18,8 @@ services:
             args:
                 JITSI_GIT_REPO: https://github.com/sg12/jitsi-meet.git
                 JITSI_BRANCH: develop-5
+        depends_on:
+            - base  # 📌 Говорим, что `web` должен ждать `base`
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '8443:8443'  # Прокси на 8443
