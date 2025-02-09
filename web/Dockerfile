@@ -1,4 +1,3 @@
-Вот мой текущий докерфайл. Внеси в него изменения:
 ARG JITSI_GIT_REPO
 ARG JITSI_BRANCH
 
