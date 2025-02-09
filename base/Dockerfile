@@ -23,9 +23,10 @@ RUN \
     apt-dpkg-wrap apt-get install -y nodejs && \
     # Проверяем, что npm установлен
     npm --version && \
-    # Клонируем репозиторий с использованием HTTPS
-    git config --global http.postBuffer 1048576000 && \
-    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet || { echo "Git clone failed"; exit 1; } && \
+    # Скачиваем архив с репозиторием Jitsi и распаковываем его
+    wget https://github.com/sg12/jitsi-meet/archive/refs/heads/${JITSI_BRANCH}.zip -O /tmp/jitsi-meet.zip && \
+    unzip /tmp/jitsi-meet.zip -d /usr/src/ && \
+    mv /usr/src/jitsi-meet-${JITSI_BRANCH} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
     npm install && \
     make && \
@@ -45,7 +46,6 @@ RUN \
     apt-dpkg-wrap apt-get dist-upgrade -y && \
     apt-cleanup && \
     chmod +x /usr/bin/tpl
-
 
 RUN [ "$JITSI_RELEASE" = "unstable" ] && \
     apt-dpkg-wrap apt-get update && \
