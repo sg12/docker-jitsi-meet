@@ -17,7 +17,7 @@ RUN \
         *) echo "unsupported architecture"; exit 1 ;; \
     esac && \
     apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client lsb-release && \
+    apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client lsb-release make && \
     # Устанавливаем Node.js и npm
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-dpkg-wrap apt-get install -y nodejs && \
