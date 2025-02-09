@@ -9,8 +9,6 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 COPY rootfs /
 
-RUN git config --global http.postBuffer 1048576000
-
 RUN \
     dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
@@ -26,6 +24,7 @@ RUN \
     # Проверяем, что npm установлен
     npm --version && \
     # Клонируем репозиторий с использованием HTTPS
+    git config --global http.postBuffer 1048576000 && \
     git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet || { echo "Git clone failed"; exit 1; } && \
     cd /usr/src/jitsi-meet && \
     npm install && \
@@ -46,6 +45,7 @@ RUN \
     apt-dpkg-wrap apt-get dist-upgrade -y && \
     apt-cleanup && \
     chmod +x /usr/bin/tpl
+
 
 RUN [ "$JITSI_RELEASE" = "unstable" ] && \
     apt-dpkg-wrap apt-get update && \
