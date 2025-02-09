@@ -13,8 +13,8 @@ services:
         extra_hosts:
           - "meet.jitsi:127.0.0.1"
         build:  # 🔹 Добавляем сборку из репозитория
-            context: .
-            dockerfile: web/Dockerfile
+            context: ./web
+            dockerfile: Dockerfile
             args:
                 JITSI_GIT_REPO: https://github.com/sg12/jitsi-meet.git
                 JITSI_BRANCH: develop-5
