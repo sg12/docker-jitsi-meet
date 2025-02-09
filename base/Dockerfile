@@ -48,7 +48,7 @@ RUN apt-dpkg-wrap apt-get update && \
 
 # 📌 Клонируем ваш форк Jitsi Meet
 ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
-ARG JITSI_BRANCH=develop-5
+ARG JITSI_BRANCH=develop
 
 RUN git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
