@@ -54,14 +54,6 @@ RUN mkdir -p /config
 # ✅ Копируем конфиг prosody в нужное место
 COPY prosody/rootfs/defaults/prosody.cfg.lua /config/prosody.cfg.lua
 
-# ✅ Генерируем prosody.cfg.lua с помощью frep
-RUN /usr/bin/frep /config/prosody.cfg.lua --overwrite /config/prosody.cfg.lua
-
-# ✅ Генерируем конфиги Nginx с помощью frep
-RUN /usr/bin/frep /config/nginx/meet.conf --overwrite /config/nginx/meet.conf && \
-    /usr/bin/frep /config/nginx/ssl.conf --overwrite /config/nginx/ssl.conf && \
-    /usr/bin/frep /etc/nginx/nginx.conf --overwrite /etc/nginx/nginx.conf
-
 # ✅ Удаляем кеши
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -78,10 +70,8 @@ EXPOSE 80 443 8443 8000
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
 
-# ✅ Запуск обработки шаблонов при старте контейнера
-ENTRYPOINT ["/bin/sh", "-c", "
-    /usr/bin/frep /config/nginx/meet.conf --overwrite /config/nginx/meet.conf && \
-    /usr/bin/frep /config/nginx/ssl.conf --overwrite /config/nginx/ssl.conf && \
-    /usr/bin/frep /etc/nginx/nginx.conf --overwrite /etc/nginx/nginx.conf && \
-    exec /init
-"]
+# ✅ Скрипт для обработки Nginx конфигов перед запуском контейнера
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
