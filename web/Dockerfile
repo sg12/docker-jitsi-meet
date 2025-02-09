@@ -31,30 +31,10 @@ LABEL org.opencontainers.image.url="https://jitsi.org/jitsi-meet/"
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 LABEL org.opencontainers.image.documentation="https://jitsi.github.io/handbook/"
 
-# Задаём аргументы для загрузки кода
-ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
-ARG JITSI_BRANCH=develop-5
-
-# Устанавливаем зависимости
+# Устанавливаем только нужные пакеты
 RUN apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y dnsutils cron nginx-extras socat curl jq git npm make && \
+    apt-dpkg-wrap apt-get install -y dnsutils cron nginx-extras socat curl jq && \
     apt-cleanup
-
-# Удаляем старый код, если он был
-RUN rm -rf /usr/share/jitsi-meet
-
-# Клонируем ваш репозиторий
-RUN git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet
-
-# Переходим в папку с кодом
-WORKDIR /usr/src/jitsi-meet
-
-# Устанавливаем зависимости и собираем фронтенд
-RUN npm install
-RUN make
-
-# Копируем собранный код в папку, где Nginx его будет раздавать
-RUN cp -r /usr/src/jitsi-meet /usr/share/jitsi-meet
 
 # Добавляем `acme.sh` (если он ещё нужен)
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
@@ -62,11 +42,6 @@ ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 # Копируем конфиги и настройки
 COPY rootfs/ /
 
-# Очищаем ненужные файлы
-RUN rm -rf /usr/src/jitsi-meet/.git && \
-    rm -rf /usr/src/jitsi-meet/node_modules
-
 EXPOSE 80 443
 
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
-
