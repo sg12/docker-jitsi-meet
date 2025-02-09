@@ -4,7 +4,7 @@ services:
     base:
         build:
             context: ./base
-            dockerfile: base/Dockerfile
+            dockerfile: Dockerfile
         image: custom-jitsi-base  # 📌 Локальное имя для удобства (можно изменить)
     # Frontend
     web:
