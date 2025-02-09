@@ -20,6 +20,13 @@ RUN \
     # Добавляем ключ GitHub в known_hosts
     mkdir -p ~/.ssh && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts && \
+    # Настроим использование SSH-агента
+    mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh && \
+    # Здесь можно вставить ваш публичный ключ вручную или через сборку
+    # Добавьте ваш SSH-ключ в контейнер
+    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa && \
     # Клонируем репозиторий из GitHub
     git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
