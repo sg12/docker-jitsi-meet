@@ -1,7 +1,7 @@
 FROM docker.io/library/debian:bookworm-slim
 
 ARG JITSI_RELEASE=stable
-ARG JITSI_GIT_REPO="https://github.com/sg12/jitsi-meet.git"  # Используем HTTPS
+ARG JITSI_GIT_REPO="https://github.com/sg12/jitsi-meet.git"
 ARG JITSI_BRANCH=develop
 ARG SSH_PRIVATE_KEY
 
@@ -9,8 +9,7 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 COPY rootfs /
 
-RUN \
-    dpkgArch="$(dpkg --print-architecture)" && \
+RUN dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
         "amd64") TPL_ARCH=amd64; S6_ARCH=amd64 ;; \
         "arm64") TPL_ARCH=arm64; S6_ARCH=aarch64 ;; \
@@ -18,19 +17,15 @@ RUN \
     esac && \
     apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y apt-transport-https apt-utils ca-certificates gnupg wget curl git openssh-client lsb-release make unzip && \
-    # Устанавливаем Node.js и npm
     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-dpkg-wrap apt-get install -y nodejs && \
-    # Проверяем, что npm установлен
     npm --version && \
-    # Скачиваем архив с репозиторием Jitsi и распаковываем его
     wget https://github.com/sg12/jitsi-meet/archive/refs/heads/${JITSI_BRANCH}.zip -O /tmp/jitsi-meet.zip && \
     unzip /tmp/jitsi-meet.zip -d /usr/src/ && \
     mv /usr/src/jitsi-meet-${JITSI_BRANCH} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
     npm install && \
-    make -j2 && \  # Используем меньше потоков для уменьшения нагрузки на память
-    # Устанавливаем tpl
+    make && \
     wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
     wget -qO /tmp/s6.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz && \
     mkdir /tmp/s6 && \
