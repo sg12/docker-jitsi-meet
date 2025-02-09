@@ -29,7 +29,7 @@ RUN \
     mv /usr/src/jitsi-meet-${JITSI_BRANCH} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
     npm install && \
-    make && \
+    make -j2 && \  # Используем меньше потоков для уменьшения нагрузки на память
     # Устанавливаем tpl
     wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
     wget -qO /tmp/s6.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz && \
