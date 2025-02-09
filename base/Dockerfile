@@ -50,6 +50,9 @@ RUN apt-dpkg-wrap apt-get update && \
 ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
 ARG JITSI_BRANCH=develop
 
+RUN git config --global http.postBuffer 524288000
+RUN git config --global core.compression 0
+
 RUN git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
     npm install && \
