@@ -39,12 +39,18 @@ RUN [ "$JITSI_RELEASE" = "unstable" ] && \
 # ❌ Удаляем официальный репозиторий Jitsi
 RUN rm -f /etc/apt/sources.list.d/jitsi.list
 
+# ✅ Обновляем список пакетов перед установкой `git`, `npm`, `make`
+RUN apt-dpkg-wrap apt-get update && \
+    apt-dpkg-wrap apt-get install -y git curl ca-certificates && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-dpkg-wrap apt-get install -y nodejs make && \
+    rm -rf /var/lib/apt/lists/*
+
 # 📌 Клонируем ваш форк Jitsi Meet
 ARG JITSI_GIT_REPO=https://github.com/sg12/jitsi-meet.git
 ARG JITSI_BRANCH=develop-5
 
-RUN apt-dpkg-wrap apt-get install -y git npm make && \
-    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
+RUN git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet && \
     cd /usr/src/jitsi-meet && \
     npm install && \
     make
