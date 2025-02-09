@@ -3,8 +3,8 @@ version: '3.5'
 services:
     base:
         build:
-            context: .
-            dockerfile: base/Dockerfile  # 📌 Указываем, что это базовый образ
+            context: ./base
+            dockerfile: base/Dockerfile
         image: custom-jitsi-base  # 📌 Локальное имя для удобства (можно изменить)
     # Frontend
     web:
