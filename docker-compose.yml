@@ -222,6 +222,7 @@ services:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
             - /root/docker-jitsi-meet/prosody/rootfs/defaults/prosody.cfg.lua:/config/prosody.cfg.lua
+            - /root/docker-jitsi-meet/prosody/rootfs/defaults/prosody.cfg.lua:/etc/prosody/prosody.cfg.lua
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
