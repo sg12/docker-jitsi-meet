@@ -29,15 +29,15 @@ ARG JITSI_RELEASE=stable
 # Переменные окружения
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-# Устанавливаем зависимости
+# Устанавливаем зависимости (без apt-dpkg-wrap)
 RUN dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
         "amd64") TPL_ARCH=amd64; S6_ARCH=amd64 ;; \
         "arm64") TPL_ARCH=arm64; S6_ARCH=aarch64 ;; \
         *) echo "unsupported architecture"; exit 1 ;; \
     esac && \
-    apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y \
+    apt-get update && \
+    apt-get install -y \
         apt-transport-https \
         apt-utils \
         ca-certificates \
@@ -52,7 +52,7 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         socat \
         cron \
         dnsutils && \
-    apt-cleanup
+    rm -rf /var/lib/apt/lists/*  # Очистка кеша APT
 
 # Добавляем acme.sh
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
