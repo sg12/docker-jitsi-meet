@@ -55,7 +55,7 @@ COPY docker_build.tar.gz /tmp/docker_build.tar.gz
 
 # 📌 **Распаковываем в нужную директорию**
 RUN mkdir -p /usr/share/jitsi-meet && \
-    tar -xzf /tmp/docker_build.tar.gz -C /usr/share/jitsi-meet && \
+    tar -xzf /tmp/docker_build.tar.gz --strip-components=1 -C /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
 
 # 📌 **Настройки репозиториев Jitsi (если они еще нужны)**
