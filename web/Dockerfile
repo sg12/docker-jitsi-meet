@@ -23,13 +23,7 @@
 
 FROM docker.io/library/debian:bookworm-slim
 
-# Аргументы сборки
-ARG JITSI_RELEASE=stable
-
-# Переменные окружения
-ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
-
-# Устанавливаем зависимости
+# Устанавливаем необходимые зависимости
 RUN dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
         "amd64") TPL_ARCH=amd64; S6_ARCH=amd64 ;; \
@@ -55,13 +49,16 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
 # Добавляем acme.sh
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 
-# 📌 **Копируем собранную сборку внутрь контейнера**
+# 📌 **Передаём архив со сборкой**
 COPY docker_build.tar.gz /tmp/
 
-# 📌 **Распаковываем сборку в нужную директорию**
+# 📌 **Распаковываем сборку в директорию веб-сервера Jitsi**
 RUN mkdir -p /usr/share/jitsi-meet && \
     tar -xzf /tmp/docker_build.tar.gz -C /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
+
+# 📌 **Настройка Nginx (если нужно)**
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Открываем порты
 EXPOSE 80 443
@@ -69,8 +66,5 @@ EXPOSE 80 443
 # Определяем точки монтирования
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
 
-# Указываем точку входа
-ENTRYPOINT [ "/init" ]
-
-
-
+# Запуск веб-сервера Jitsi
+CMD ["nginx", "-g", "daemon off;"]
