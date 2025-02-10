@@ -63,13 +63,6 @@ RUN mkdir -p /usr/share/jitsi-meet && \
     tar -xzf /tmp/docker_build.tar.gz -C /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
 
-# 📌 **Добавляем репозитории Jitsi**
-RUN wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmour > /etc/apt/trusted.gpg.d/jitsi.gpg && \
-    echo "deb https://download.jitsi.org $JITSI_RELEASE/" > /etc/apt/sources.list.d/jitsi.list && \
-    echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
-    apt-dpkg-wrap apt-get update && \
-    apt-cleanup
-
 # Открываем порты
 EXPOSE 80 443
 
@@ -78,5 +71,6 @@ VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
 
 # Указываем точку входа
 ENTRYPOINT [ "/init" ]
+
 
 
