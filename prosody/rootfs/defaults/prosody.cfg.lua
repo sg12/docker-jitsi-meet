@@ -109,6 +109,7 @@ modules_enabled = {
 	-- HTTP modules
 		"bosh"; --+ Enable BOSH clients, aka "Jabber over HTTP"
 		"http_files"; -- Serve static files from a directory over HTTP
+	-- ++
 
 	-- Other specific functionality
 		"posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
