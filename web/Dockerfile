@@ -25,9 +25,6 @@ FROM docker.io/library/debian:bookworm-slim
 
 # Аргументы сборки
 ARG JITSI_RELEASE=stable
-ARG JITSI_GIT_REPO="https://github.com/sg12/jitsi-meet.git"
-ARG JITSI_BRANCH=develop
-ARG SSH_PRIVATE_KEY
 
 # Переменные окружения
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
@@ -47,52 +44,30 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         gnupg \
         wget \
         curl \
-        git \
-        openssh-client \
-        lsb-release \
-        make \
-        unzip \
         nginx-extras \
         socat \
         cron \
-        dnsutils && \
-    curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
-    apt-dpkg-wrap apt-get install -y nodejs && \
-    npm --version
+        dnsutils \
+        unzip && \
+    apt-dpkg-wrap apt-get dist-upgrade -y && \
+    apt-cleanup
 
 # Добавляем acme.sh
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 
-# Настроим Git, чтобы избежать проблем с загрузкой
-RUN git config --global http.postBuffer 1048576000 && \
-    git clone --branch ${JITSI_BRANCH} ${JITSI_GIT_REPO} /usr/src/jitsi-meet || { echo "Git clone failed"; exit 1; }
+# 📌 **Копируем собранную сборку внутрь контейнера**
+COPY docker_build.tar.gz /tmp/
 
-# Переходим в папку с кодом
-WORKDIR /usr/src/jitsi-meet
+# 📌 **Распаковываем сборку в нужную директорию**
+RUN mkdir -p /usr/share/jitsi-meet && \
+    tar -xzf /tmp/docker_build.tar.gz -C /usr/share/jitsi-meet && \
+    rm /tmp/docker_build.tar.gz
 
-# Устанавливаем зависимости и собираем фронтенд
-RUN npm install && \
-    make && \
-    cp -r /usr/src/jitsi-meet /usr/share/jitsi-meet && \
-    rm -rf /usr/src/jitsi-meet/.git && \
-    rm -rf /usr/src/jitsi-meet/node_modules
-
-# Устанавливаем tpl
-RUN wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
-    wget -qO /tmp/s6.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz && \
-    mkdir /tmp/s6 && \
-    tar xfz /tmp/s6.tar.gz -C /tmp/s6 && \
-    tar hxfz /tmp/s6.tar.gz -C / && \
-    rm -f /usr/bin/execlineb && \
-    cp /tmp/s6/bin/execlineb /usr/bin/ && \
-    rm -rf /tmp/s6*
-
-# Добавляем репозитории Jitsi
+# 📌 **Добавляем репозитории Jitsi**
 RUN wget -qO - https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmour > /etc/apt/trusted.gpg.d/jitsi.gpg && \
     echo "deb https://download.jitsi.org $JITSI_RELEASE/" > /etc/apt/sources.list.d/jitsi.list && \
     echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
     apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get dist-upgrade -y && \
     apt-cleanup
 
 # Открываем порты
@@ -103,4 +78,5 @@ VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
 
 # Указываем точку входа
 ENTRYPOINT [ "/init" ]
+
 
