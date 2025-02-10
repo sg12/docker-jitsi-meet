@@ -1,26 +1,3 @@
-#ARG JITSI_REPO=jitsi
-#ARG BASE_TAG=latest
-#FROM custom-jitsi-base
-
-#LABEL org.opencontainers.image.title="Jitsi Meet"
-#LABEL org.opencontainers.image.description="WebRTC compatible JavaScript application that uses Jitsi Videobridge to provide high quality, scalable video conferences."
-#LABEL org.opencontainers.image.url="https://jitsi.org/jitsi-meet/"
-#LABEL org.opencontainers.image.source="https://github.com/jitsi/docker-jitsi-meet"
-#LABEL org.opencontainers.image.documentation="https://jitsi.github.io/handbook/"
-
-#ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
-#COPY rootfs/ /
-
-#RUN apt-dpkg-wrap apt-get update && \
-#    apt-dpkg-wrap apt-get install -y dnsutils cron nginx-extras jitsi-meet-web socat curl jq && \
-#    mv /usr/share/jitsi-meet/interface_config.js /defaults && \
-#    rm -f /etc/nginx/conf.d/default.conf && \
-#    apt-cleanup
-
-#EXPOSE 80 443
-
-#VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
-
 FROM docker.io/library/debian:bookworm-slim
 
 # Аргументы сборки
@@ -29,7 +6,7 @@ ARG JITSI_RELEASE=stable
 # Переменные окружения
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-# Устанавливаем зависимости (без apt-dpkg-wrap)
+# Устанавливаем зависимости (без apt-dpkg-wrap) и определяем архитектуру
 RUN dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
         "amd64") TPL_ARCH=amd64; S6_ARCH=amd64 ;; \
@@ -51,7 +28,12 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         nginx-extras \
         socat \
         cron \
-        dnsutils && \
+        dnsutils \
+        jq \
+        procps \
+        vim \
+        iputils-ping \
+        net-tools && \
     rm -rf /var/lib/apt/lists/*  # Очистка кеша APT
 
 # Добавляем acme.sh
@@ -66,8 +48,25 @@ RUN mkdir -p /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
 
 # Устанавливаем tpl
-RUN wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH} && \
+RUN wget -qO /usr/bin/tpl "https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH}" && \
     chmod +x /usr/bin/tpl
+
+# Устанавливаем S6 overlay
+RUN wget -qO /tmp/s6.tar.gz "https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz" && \
+    mkdir /tmp/s6 && \
+    tar xfz /tmp/s6.tar.gz -C /tmp/s6 && \
+    tar hxfz /tmp/s6.tar.gz -C / && \
+    rm -f /usr/bin/execlineb && \
+    cp /tmp/s6/bin/execlineb /usr/bin/ && \
+    rm -rf /tmp/s6*
+
+# 📌 **Настройки репозиториев Jitsi (если они еще нужны)**
+RUN wget -qO - "https://download.jitsi.org/jitsi-key.gpg.key" | gpg --dearmour > /etc/apt/trusted.gpg.d/jitsi.gpg && \
+    echo "deb https://download.jitsi.org $JITSI_RELEASE/" > /etc/apt/sources.list.d/jitsi.list && \
+    echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
+    apt-get update && \
+    apt-get dist-upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Открываем порты
 EXPOSE 80 443
