@@ -23,14 +23,8 @@
 
 FROM docker.io/library/debian:bookworm-slim
 
-# Устанавливаем необходимые зависимости
-RUN dpkgArch="$(dpkg --print-architecture)" && \
-    case "${dpkgArch##*-}" in \
-        "amd64") TPL_ARCH=amd64; S6_ARCH=amd64 ;; \
-        "arm64") TPL_ARCH=arm64; S6_ARCH=aarch64 ;; \
-        *) echo "unsupported architecture"; exit 1 ;; \
-    esac && \
-    apt-dpkg-wrap apt-get update && \
+# Устанавливаем зависимости
+RUN apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y \
         apt-transport-https \
         apt-utils \
@@ -43,22 +37,22 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         cron \
         dnsutils \
         unzip && \
-    apt-dpkg-wrap apt-get dist-upgrade -y && \
     apt-cleanup
 
 # Добавляем acme.sh
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 
-# 📌 **Передаём архив со сборкой**
-COPY docker_build.tar.gz /tmp/
+# 📌 **Загружаем архив сборки (замени путь, если нужно)**
+COPY docker_build.tar.gz /tmp/docker_build.tar.gz
 
-# 📌 **Распаковываем сборку в директорию веб-сервера Jitsi**
+# 📌 **Распаковываем**
 RUN mkdir -p /usr/share/jitsi-meet && \
     tar -xzf /tmp/docker_build.tar.gz -C /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
 
-# 📌 **Настройка Nginx (если нужно)**
-COPY nginx.conf /etc/nginx/nginx.conf
+# Устанавливаем tpl (если нужно)
+RUN wget -qO /usr/bin/tpl https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-amd64 && \
+    chmod +x /usr/bin/tpl
 
 # Открываем порты
 EXPOSE 80 443
@@ -66,5 +60,6 @@ EXPOSE 80 443
 # Определяем точки монтирования
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
 
-# Запуск веб-сервера Jitsi
-CMD ["nginx", "-g", "daemon off;"]
+# Указываем точку входа
+ENTRYPOINT [ "/init" ]
+
