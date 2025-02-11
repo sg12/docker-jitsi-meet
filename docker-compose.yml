@@ -140,10 +140,10 @@ services:
             - MATOMO_ENDPOINT
             - MATOMO_SITE_ID
             - MICROSOFT_API_APP_CLIENT_ID
-            - NGINX_KEEPALIVE_TIMEOUT
+            - NGINX_KEEPALIVE_TIMEOUT=65
             - NGINX_RESOLVER
-            - NGINX_WORKER_PROCESSES
-            - NGINX_WORKER_CONNECTIONS
+            - NGINX_WORKER_PROCESSES=4
+            - NGINX_WORKER_CONNECTIONS=768
             - PEOPLE_SEARCH_URL
             - PREFERRED_LANGUAGE
             - PUBLIC_URL
