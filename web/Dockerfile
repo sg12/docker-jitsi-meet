@@ -59,6 +59,13 @@ RUN mkdir -p /usr/share/jitsi-meet && \
     tar -xzf /tmp/docker_build.tar.gz --strip-components=1 -C /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
 
+# 📌 **Настройки репозиториев Jitsi (если они еще нужны)**
+RUN wget -qO - "https://download.jitsi.org/jitsi-key.gpg.key" | gpg --dearmour > /etc/apt/trusted.gpg.d/jitsi.gpg && \
+    echo "deb https://download.jitsi.org $JITSI_RELEASE/" > /etc/apt/sources.list.d/jitsi.list && \
+    echo "deb http://ftp.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list && \
+    apt-get update && \
+    apt-get dist-upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # 📌 **Обрабатываем `nginx.conf` сразу при сборке**
 COPY /root/docker-jitsi-meet/web/rootfs/defaults/nginx.conf /tmp/nginx.conf
