@@ -6,7 +6,7 @@ ARG JITSI_RELEASE=stable
 # Переменные окружения
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
-# Устанавливаем зависимости, определяем архитектуру, устанавливаем TPL, S6 overlay и acme.sh
+# Устанавливаем зависимости, определяем архитектуру, устанавливаем TPL, S6 overlay, acme.sh и gettext
 RUN dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
         "amd64") TPL_ARCH=amd64; S6_ARCH=amd64 ;; \
@@ -33,7 +33,8 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         procps \
         vim \
         iputils-ping \
-        net-tools && \
+        net-tools \
+        gettext-base && \  # 🔹 Добавили gettext-base (для envsubst)
     rm -rf /var/lib/apt/lists/* && \
     # Устанавливаем tpl
     wget -qO /usr/bin/tpl "https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH}" && \
@@ -65,6 +66,10 @@ RUN wget -qO - "https://download.jitsi.org/jitsi-key.gpg.key" | gpg --dearmour >
     apt-get update && \
     apt-get dist-upgrade -y && \
     rm -rf /var/lib/apt/lists/*
+
+# 📌 **Обрабатываем `nginx.conf` сразу при сборке**
+COPY /root/docker-jitsi-meet/web/rootfs/defaults/nginx.conf /tmp/nginx.conf
+RUN envsubst < /tmp/nginx.conf > /etc/nginx/nginx.conf && rm /tmp/nginx.conf
 
 # Открываем порты
 EXPOSE 80 443
