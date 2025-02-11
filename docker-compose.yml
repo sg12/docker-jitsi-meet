@@ -221,6 +221,7 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
+            - /root/docker-jitsi-meet/jitsi-meet.cfg.lua:/config/jitsi-meet.cfg.lua:ro
             #- /root/docker-jitsi-meet/prosody/rootfs/defaults/prosody.cfg.lua:/config/prosody.cfg.lua
             #- /root/docker-jitsi-meet/prosody/rootfs/defaults/prosody.cfg.lua:/etc/prosody/prosody.cfg.lua
             #- /root/docker-jitsi-meet/prosody/rootfs/defaults/conf.d:/etc/prosody/conf.d 
