@@ -27,7 +27,7 @@ services:
             - /etc/ssl/jitsi-connectrm-test.ru.key:/config/keys/cert.key:ro
             - /root/docker-jitsi-meet/web/rootfs/defaults/default:/etc/nginx/sites-available/default:rw
             - /root/docker-jitsi-meet/web/rootfs/defaults/nginx.conf:/etc/nginx/nginx.conf:rw
-            - /root/docker-jitsi-meet/web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:rw
+            #- /root/docker-jitsi-meet/web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:rw
         labels:
             service: "jitsi-web"
         environment:
