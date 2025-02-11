@@ -13,6 +13,7 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         "arm64") TPL_ARCH=arm64; S6_ARCH=aarch64 ;; \
         *) echo "unsupported architecture"; exit 1 ;; \
     esac && \
+    echo "Using architecture: TPL_ARCH=${TPL_ARCH}, S6_ARCH=${S6_ARCH}" && \
     apt-get update && \
     apt-get install -y \
         apt-transport-https \
@@ -35,23 +36,20 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
         iputils-ping \
         net-tools \
         gettext-base && \
-    rm -rf /var/lib/apt/lists/*
-
-# Устанавливаем tpl
-RUN wget -qO /usr/bin/tpl "https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH}" && \
-    chmod +x /usr/bin/tpl
-
-# Устанавливаем S6 overlay
-RUN wget -qO /tmp/s6.tar.gz "https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz" && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Устанавливаем tpl
+    curl -fsSL -o /usr/bin/tpl "https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH}" && \
+    chmod +x /usr/bin/tpl && \
+    # Устанавливаем S6 overlay
+    curl -fsSL -o /tmp/s6.tar.gz "https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz" && \
     mkdir /tmp/s6 && \
     tar xfz /tmp/s6.tar.gz -C /tmp/s6 && \
     tar hxfz /tmp/s6.tar.gz -C / && \
     rm -f /usr/bin/execlineb && \
     cp /tmp/s6/bin/execlineb /usr/bin/ && \
-    rm -rf /tmp/s6*
-
-# Добавляем acme.sh
-RUN wget -qO /opt/acme.sh "https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh" && \
+    rm -rf /tmp/s6* && \
+    # Добавляем acme.sh
+    curl -fsSL -o /opt/acme.sh "https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh" && \
     chmod +x /opt/acme.sh
 
 # 📌 **Загружаем готовую сборку**
