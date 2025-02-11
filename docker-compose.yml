@@ -213,9 +213,8 @@ services:
             - >
                 if [ -f /config/nginx/nginx.conf ]; then
                     /usr/bin/tpl /config/nginx/nginx.conf > /etc/nginx/nginx.conf;
-                else
-                    echo 'WARNING: /config/nginx/nginx.conf not found!';
                 fi;
+                cp /config/nginx/meet-final.conf /etc/nginx/conf.d/meet.conf;
                 exec /init
         #entrypoint: ["/bin/sh", "-c", "envsubst '$(printenv | cut -d= -f1 | sed 's/^/\$/g' | tr '\n' ' ')' < /config/nginx/nginx.conf > /etc/nginx/nginx.conf && exec /init"]
 
