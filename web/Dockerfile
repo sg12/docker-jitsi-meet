@@ -41,4 +41,34 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
     curl -fsSL -o /usr/bin/tpl "https://github.com/jitsi/tpl/releases/download/v1.4.0/tpl-linux-${TPL_ARCH}" && \
     chmod +x /usr/bin/tpl && \
     # Устанавливаем S6 overlay
-    curl -fsSL -o /tmp/s6.tar
+    curl -fsSL -o /tmp/s6.tar.gz "https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-${S6_ARCH}.tar.gz" && \
+    mkdir /tmp/s6 && \
+    tar xfz /tmp/s6.tar.gz -C /tmp/s6 && \
+    tar hxfz /tmp/s6.tar.gz -C / && \
+    rm -f /usr/bin/execlineb && \
+    cp /tmp/s6/bin/execlineb /usr/bin/ && \
+    rm -rf /tmp/s6* && \
+    # Добавляем acme.sh
+    curl -fsSL -o /opt/acme.sh "https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh" && \
+    chmod +x /opt/acme.sh
+
+# 📌 **Загружаем готовую сборку**
+COPY docker_build.tar.gz /tmp/docker_build.tar.gz
+
+# 📌 **Распаковываем в нужную директорию**
+RUN mkdir -p /usr/share/jitsi-meet && \
+    tar -xzf /tmp/docker_build.tar.gz --strip-components=1 -C /usr/share/jitsi-meet && \
+    rm /tmp/docker_build.tar.gz
+
+# 📌 **Обрабатываем `nginx.conf` сразу при сборке с помощью `tpl`**
+COPY web/rootfs/defaults/nginx.conf /tmp/nginx.conf
+RUN tpl /tmp/nginx.conf > /etc/nginx/nginx.conf && rm /tmp/nginx.conf
+
+# Открываем порты
+EXPOSE 80 443
+
+# Определяем точки монтирования
+VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
+
+# Указываем точку входа
+ENTRYPOINT [ "/init" ]
