@@ -204,7 +204,7 @@ services:
             meet.jitsi:
         depends_on:
             - jvb
-        entrypoint: ["/bin/sh", "-c", "envsubst < /config/nginx/nginx.conf > /etc/nginx/nginx.conf && exec /init"]
+        entrypoint: ["/bin/sh", "-c", "apt update && apt install gettext -y && envsubst < /config/nginx/nginx.conf > /etc/nginx/nginx.conf && exec /init"]
 
     # XMPP server
     prosody:
