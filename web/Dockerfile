@@ -61,8 +61,8 @@ RUN mkdir -p /usr/share/jitsi-meet && \
     rm /tmp/docker_build.tar.gz
 
 # 📌 **Обрабатываем `nginx.conf` сразу при сборке**
-COPY /root/docker-jitsi-meet/web/rootfs/defaults/nginx.conf /tmp/nginx.conf
-RUN envsubst < /tmp/nginx.conf > /etc/nginx/nginx.conf && rm /tmp/nginx.conf
+#COPY /root/docker-jitsi-meet/web/rootfs/defaults/nginx.conf /tmp/nginx.conf
+#RUN envsubst < /tmp/nginx.conf > /etc/nginx/nginx.conf && rm /tmp/nginx.conf
 
 # Открываем порты
 EXPOSE 80 443
