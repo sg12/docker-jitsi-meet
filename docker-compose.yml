@@ -211,8 +211,8 @@ services:
             - "/bin/sh"
             - "-c"
             - >
-                if [ -f /config/nginx/nginx.conf ]; then
-                    /usr/bin/tpl /config/nginx/nginx.conf > /etc/nginx/nginx.conf;
+                if [ -f /config/nginx/meet.conf ]; then
+                    /usr/bin/tpl /config/nginx/meet.conf > /config/nginx/meet-final.conf;
                 fi;
                 cp /config/nginx/meet-final.conf /etc/nginx/conf.d/meet.conf;
                 exec /init
