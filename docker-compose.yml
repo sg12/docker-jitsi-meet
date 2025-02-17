@@ -497,7 +497,7 @@ services:
 
     # 🔹 Jibri (Запись и трансляции)
     jibri:
-        image: jitsi/jibri:latest
+        image: jitsi/jibri:unstable-8736
         restart: unless-stopped
         depends_on:
           - jicofo
