@@ -504,7 +504,6 @@ services:
           - jvb
           - prosody
         volumes:
-          - /dev/shm:/dev/shm
           - ./jibri-config:/config
         shm_size: "2g"
         environment:
