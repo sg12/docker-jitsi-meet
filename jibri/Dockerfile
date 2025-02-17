@@ -1,6 +1,7 @@
-ARG JITSI_REPO=jitsi
-ARG BASE_TAG=latest
-FROM ${JITSI_REPO}/base-java:${BASE_TAG}
+ARG CHROME_RELEASE=130.0.6723.116
+
+# Используем OpenJDK 11 в качестве базового образа
+FROM openjdk:11-jre-slim
 
 LABEL org.opencontainers.image.title="Jitsi Broadcasting Infrastructure (jibri)"
 LABEL org.opencontainers.image.description="Components for recording and/or streaming a conference."
@@ -8,20 +9,13 @@ LABEL org.opencontainers.image.url="https://github.com/jitsi/jibri"
 LABEL org.opencontainers.image.source="https://github.com/jitsi/docker-jitsi-meet"
 LABEL org.opencontainers.image.documentation="https://jitsi.github.io/handbook/"
 
-ARG USE_CHROMIUM=0
-#ARG CHROME_RELEASE=latest
-# https://googlechromelabs.github.io/chrome-for-testing/
-ARG CHROME_RELEASE=130.0.6723.116
-
 COPY rootfs/ /
 
-RUN apt-dpkg-wrap apt-get update && \
-    apt-dpkg-wrap apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+RUN apt-get update && \
+    apt-get install -y \
         jibri \
         libgl1-mesa-dri \
         procps \
-        jitsi-upload-integrations \
-        jitsi-autoscaler-sidecar \
         jq \
         pulseaudio \
         dbus \
@@ -31,8 +25,7 @@ RUN apt-dpkg-wrap apt-get update && \
         fonts-noto \
         fonts-noto-cjk \
         libcap2-bin && \
-    /usr/bin/install-chrome.sh && \
-    apt-cleanup && \
+    apt-get clean && \
     adduser jibri rtkit && \
     dpkgArch="$(dpkg --print-architecture)" && \
     case "${dpkgArch##*-}" in \
