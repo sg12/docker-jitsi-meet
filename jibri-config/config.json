@@ -1,0 +1,22 @@
+{
+  "recording_directory": "/config/recordings",
+  "finalize_recording_script_path": "",
+  "xmpp_environments": [
+    {
+      "name": "prod environment",
+      "xmpp_server_hosts": ["xmpp.meet.jitsi"],
+      "xmpp_domain": "meet.jitsi",
+      "control_login": {
+        "domain": "auth.meet.jitsi",
+        "username": "jibri",
+        "password": "jibripass"
+      },
+      "control_muc": {
+        "domain": "internal.auth.meet.jitsi",
+        "room_name": "jibribrewery",
+        "nickname": "jibri-nickname"
+      },
+      "usage_timeout": "0"
+    }
+  ]
+}
