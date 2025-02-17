@@ -506,6 +506,7 @@ services:
         volumes:
           - /dev/shm:/dev/shm
           - ./jibri-config:/config
+        shm_size: "2g"
         environment:
           XMPP_AUTH_DOMAIN: auth.meet.jitsi
           XMPP_INTERNAL_AUTH_DOMAIN: internal.auth.meet.jitsi
