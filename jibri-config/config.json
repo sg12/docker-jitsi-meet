@@ -16,7 +16,13 @@
         "room_name": "jibribrewery",
         "nickname": "jibri-nickname"
       },
+      "call_login": {
+        "domain": "recorder.meet.jitsi",
+        "username": "recorder",
+        "password": "recorderpass"
+      },
       "usage_timeout": "0"
     }
   ]
 }
+
