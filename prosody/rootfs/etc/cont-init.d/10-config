@@ -30,7 +30,10 @@ if [[ "$(stat -c %U /prosody-plugins-contrib)" != "prosody" ]]; then
 fi
 
 mkdir /config/certs
+#cp -r /defaults/* /config
 cp -r /defaults/* /config
+rm -f /config/conf.d/jitsi-meet.cfg.lua
+
 
 [ -z "$PROSODY_MODE" ] && export PROSODY_MODE="client"
 
