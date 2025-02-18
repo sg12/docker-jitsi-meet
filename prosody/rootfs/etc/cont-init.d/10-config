@@ -31,8 +31,7 @@ fi
 
 mkdir /config/certs
 #cp -r /defaults/* /config
-cp -r /defaults/* /config
-rm -f /config/conf.d/jitsi-meet.cfg.lua
+cp -rn /defaults/* /config
 
 
 [ -z "$PROSODY_MODE" ] && export PROSODY_MODE="client"
