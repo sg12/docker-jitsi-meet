@@ -203,6 +203,7 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
+            - ./prosody/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
