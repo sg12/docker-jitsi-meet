@@ -159,5 +159,6 @@ if [[ ! -f /config/certs/$XMPP_AUTH_DOMAIN.crt ]]; then
 fi
 
 # certs will be created in /config/data
-mv /config/data/*.{crt,key} /config/certs/ || true
+#mv /config/data/*.{crt,key} /config/certs/ || true
+cp -f /config/data/*.{crt,key} /config/certs/
 rm -f /config/data/*.cnf
