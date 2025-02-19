@@ -515,14 +515,14 @@ services:
           XMPP_INTERNAL_AUTH_DOMAIN: internal.auth.meet.jitsi
           XMPP_SERVER: xmpp.meet.jitsi
           XMPP_PORT: 5222
-          XMPP_DOMAIN: meet.jitsi
-          JIBRI_XMPP_USER: jibri
-          JIBRI_XMPP_PASSWORD: jibripass
-          JIBRI_BREWERY_MUC: jibribrewery
+          XMPP_DOMAIN: meet.jits
+          JIBRI_XMPP_USER
+          JIBRI_XMPP_PASSWORD
+          JIBRI_BREWERY_MUC
           JIBRI_PENDING_TIMEOUT: 90
-          JIBRI_RECORDING_DIR: /config/recordings
-          JIBRI_FINALIZE_RECORDING_SCRIPT_PATH: ""
-          JIBRI_STRIP_DOMAIN_JID: "meet.jitsi"
+          JIBRI_RECORDING_DIR
+          JIBRI_FINALIZE_RECORDING_SCRIPT_PATH
+          JIBRI_STRIP_DOMAIN_JID:
           JIBRI_LOGS_DIR: /config/logs
           DISPLAY: ":0"
           TZ: "Europe/Moscow"
