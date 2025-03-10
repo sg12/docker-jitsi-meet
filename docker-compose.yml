@@ -16,7 +16,6 @@ services:
             - ./web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:ro
             - ./web/rootfs/defaults/nginx.conf:/config/nginx/nginx.conf:ro
             - ./web/rootfs/defaults/default:/etc/nginx/sites-enabled/default:ro
-            - ./web/rootfs/defaults/default:/etc/nginx/sites-enabled/default:ro
             - ./root/ssl/connect-rm-video.ru-fullchain.pem:/etc/ssl/certs/connect-rm-video.ru-fullchain.pem:ro
             - ./root/ssl/connect-rm-video.ru-key.pem:/etc/ssl/private/connect-rm-video.ru-key.pem:ro
         labels:
