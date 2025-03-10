@@ -14,6 +14,7 @@ services:
             - ${CONFIG}/transcripts:/usr/share/jitsi-meet/transcripts:Z
             - ${CONFIG}/web/load-test:/usr/share/jitsi-meet/load-test:Z
             - ./web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:ro
+            - ./web/rootfs/defaults/nginx.conf:/config/nginx/nginx.conf:ro
         labels:
             service: "jitsi-web"
         environment:
