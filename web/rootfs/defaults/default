@@ -1,10 +1,11 @@
+# Редирект для неопределённых доменов
 server {
     listen 8443 ssl default_server;
     listen [::]:8443 ssl default_server;
     server_name _;
+
     ssl_certificate /etc/ssl/certs/fullchain.pem;
     ssl_certificate_key /etc/ssl/private/privkey.pem;
-    
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
     ssl_ciphers HIGH:!aNULL:!MD5;
@@ -12,36 +13,81 @@ server {
     return 301 https://jitsi-connectrm-test.ru$request_uri;
 }
 
+# Основной сервер для Jitsi Meet
 server {
     listen 8443 ssl;
     listen [::]:8443 ssl;
     server_name connect-rm-video.ru jitsi-connectrm-test.ru www.jitsi-connectrm-test.ru;
-    
+
     ssl_certificate /etc/ssl/certs/fullchain.pem;
     ssl_certificate_key /etc/ssl/private/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
     ssl_ciphers HIGH:!aNULL:!MD5;
-    
+
     root /usr/share/jitsi-meet;
     index index.html index.htm;
-    
+
+    # SSI для поддержки JavaScript в config.js
     ssi on;
     ssi_types application/x-javascript application/javascript;
-    
-    location /http-bind {
-        proxy_pass http://127.0.0.1:5280/http-bind;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+
+    # Security headers
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Permissions-Policy "interest-cohort=()";
+
+    # Конфигурационные файлы
+    location = /config.js {
+        alias /config/config.js;
     }
-    
+
+    location = /interface_config.js {
+        alias /config/interface_config.js;
+    }
+
+    location = /external_api.js {
+        alias /usr/share/jitsi-meet/libs/external_api.min.js;
+    }
+
+    # Статические ресурсы
+    location ~ ^/(libs|css|static|images|fonts|lang|sounds|connection_optimization|.well-known|transcripts)/(.*)$ {
+        add_header 'Access-Control-Allow-Origin' '*';
+        alias /usr/share/jitsi-meet/$1/$2;
+        if ($arg_v) {
+            expires 1y;
+        }
+    }
+
+    # BOSH для Prosody
+    location = /http-bind {
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host meet.jitsi;
+        proxy_pass http://docker-jitsi-meet_prosody_1:5280/http-bind;
+    }
+
+    # XMPP WebSocket для Prosody
+    location = /xmpp-websocket {
+        tcp_nodelay on;
+        proxy_http_version 1.1;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Host meet.jitsi;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://docker-jitsi-meet_prosody_1:5280/xmpp-websocket;
+    }
+
+    # Обработка комнат
+    location ~ ^/([^/?&:'"]+)$ {
+        try_files $uri @root_path;
+    }
+
+    location @root_path {
+        rewrite ^/(.*)$ / break;
+    }
+
+    # Основной обработчик статических файлов
     location / {
-        proxy_pass http://127.0.0.1:5280;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        try_files $uri $uri/ /index.html;
     }
 }
