@@ -18,7 +18,8 @@ services:
             - ${CONFIG}/web/rootfs/defaults/nginx.conf:/config/nginx/nginx.conf:ro
             - ${CONFIG}/web/rootfs/defaults/default:/config/nginx/site-confs/default:ro
             - ${CONFIG}/web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:ro
-            - ${CONFIG}/web/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:ro
+            - ./web/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
+
         labels:
             service: "jitsi-web"
         environment:
