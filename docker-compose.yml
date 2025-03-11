@@ -16,8 +16,8 @@ services:
             - /etc/ssl/fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
             - /etc/ssl/privkey.pem:/etc/ssl/private/privkey.pem:ro
             - ${CONFIG}/web/rootfs/defaults/nginx.conf:/config/nginx/nginx.conf:ro
-            - ${CONFIG}/web/rootfs/defaults/default:/config/nginx/site-confs/default:ro
-            - ${CONFIG}/web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:ro
+            - ./web/rootfs/defaults/default:/config/nginx/site-confs/default:ro
+            - ./web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:ro
             - ./web/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
 
         labels:
