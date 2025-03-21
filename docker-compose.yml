@@ -3,11 +3,12 @@ version: '3.5'
 services:
     # Frontend
     web:
-        image: jitsi/web:${JITSI_IMAGE_VERSION:-unstable}
+        context: .
+        dockerfile: web/Dockerfile
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
-            - "${HTTP_PORT:-80}:80"
-            - "${HTTPS_PORT:-8443}:8443"
+            - '8443:8443'  # Прокси на 8443
+            - '8000:8000'  # Прокси на 8000 (если нужно слушать этот порт)
         volumes:
             - ${CONFIG}/web:/config:Z
             - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
