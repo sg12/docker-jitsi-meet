@@ -3,8 +3,9 @@ version: '3.5'
 services:
     # Frontend
     web:
-        context: .
-        dockerfile: web/Dockerfile
+        build:
+            context: .
+            dockerfile: web/Dockerfile
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '8443:8443'  # Прокси на 8443
