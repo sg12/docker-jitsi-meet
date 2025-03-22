@@ -39,11 +39,12 @@ server {
 
     # Конфигурационные файлы
     location = /config.js {
-        alias /config/config.js;
+        alias /usr/share/jitsi-meet/config.js;
     }
 
+
     location = /interface_config.js {
-        alias /config/interface_config.js;
+        alias /usr/share/jitsi-meet/interface_config.js;
     }
 
     location = /external_api.js {
