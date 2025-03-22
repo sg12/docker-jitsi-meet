@@ -1,28 +1,21 @@
 FROM jitsi/base:stable
-
 LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
-
 RUN apt-dpkg-wrap apt-get update && apt-dpkg-wrap apt-get install -y git
-
 RUN echo "Cloning from https://github.com/sg12/jitsi-meet, branch develop"
-
 RUN git clone --depth 1 -b develop https://github.com/sg12/jitsi-meet.git /usr/share/jitsi-meet || \
     (echo "Ошибка: Репозиторий не найден или неверный branch"; exit 1)
-
 ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
-
 RUN apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y dnsutils cron nginx-extras jitsi-meet-web socat curl jq && \
+    rm -rf /defaults && \
     mkdir -p /defaults && \
     mv /usr/share/jitsi-meet/interface_config.js /defaults/interface_config.js && \
     rm -f /etc/nginx/conf.d/default.conf && \
     apt-cleanup
-
 COPY web/rootfs/defaults/default /etc/nginx/sites-available/default
-RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
+RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default && \
+    # Дополнительная защита /defaults
+    mkdir -p /defaults && touch /defaults/.keep
 EXPOSE 8443 8000
-
 VOLUME ["/config", "/usr/share/jitsi-meet/transcripts"]
-
 CMD ["nginx", "-g", "daemon off;"]
