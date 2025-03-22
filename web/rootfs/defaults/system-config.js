@@ -5,11 +5,12 @@
 {{ $ENABLE_GUESTS := .Env.ENABLE_GUESTS | default "false" | toBool -}}
 {{ $ENABLE_SUBDOMAINS := .Env.ENABLE_SUBDOMAINS | default "true" | toBool -}}
 {{ $ENABLE_XMPP_WEBSOCKET := .Env.ENABLE_XMPP_WEBSOCKET | default "1" | toBool -}}
-{{ $PUBLIC_URL_DOMAIN := .Env.PUBLIC_URL | default "https://localhost:8443" | trimPrefix "https://" | trimSuffix "/" -}}
-{{ $XMPP_AUTH_DOMAIN := .Env.XMPP_AUTH_DOMAIN | default "auth.meet.jitsi" -}}
-{{ $XMPP_DOMAIN := .Env.XMPP_DOMAIN | default "meet.jitsi" -}}
-{{ $XMPP_GUEST_DOMAIN := .Env.XMPP_GUEST_DOMAIN | default "guest.meet.jitsi" -}}
-{{ $XMPP_MUC_DOMAIN := .Env.XMPP_MUC_DOMAIN | default "muc.meet.jitsi" -}}
+{{ $PUBLIC_URL := .Env.PUBLIC_URL | default "https://localhost:8443" -}}
+{{ $HOSTNAME := trimPrefix "https://" (trimSuffix ":${HTTPS_PORT}" $PUBLIC_URL) -}}
+{{ $XMPP_AUTH_DOMAIN := .Env.XMPP_AUTH_DOMAIN | default (printf "auth.%s" $HOSTNAME) -}}
+{{ $XMPP_DOMAIN := .Env.XMPP_DOMAIN | default $HOSTNAME -}}
+{{ $XMPP_GUEST_DOMAIN := .Env.XMPP_GUEST_DOMAIN | default (printf "guest.%s" $HOSTNAME) -}}
+{{ $XMPP_MUC_DOMAIN := .Env.XMPP_MUC_DOMAIN | default (printf "muc.%s" $HOSTNAME) -}}
 {{ $XMPP_MUC_DOMAIN_PREFIX := (split "." $XMPP_MUC_DOMAIN)._0  -}}
 {{ $JVB_PREFER_SCTP := .Env.JVB_PREFER_SCTP | default "1" | toBool -}}
 
@@ -35,12 +36,10 @@ config.hosts.muc = '{{ $XMPP_MUC_DOMAIN }}';
 
 {{ if $ENABLE_AUTH -}}
 {{ if $ENABLE_GUESTS -}}
-// When using authentication, domain for guest users.
 config.hosts.anonymousdomain = '{{ $XMPP_GUEST_DOMAIN }}';
 {{ end -}}
 {{ if $ENABLE_AUTH_DOMAIN -}}
-// Domain for authenticated users. Defaults to <domain>.
-config.hosts.authdomain = '{{ $XMPP_DOMAIN }}';
+config.hosts.authdomain = '{{ $XMPP_AUTH_DOMAIN }}';
 {{ end -}}
 {{ end -}}
 
@@ -52,17 +51,17 @@ config.bosh = '/http-bind';
 {{ end -}}
 {{ else -}}
 {{ if $ENABLE_SUBDOMAINS -}}
-config.bosh = 'https://{{ $PUBLIC_URL_DOMAIN}}/' + subdir + 'http-bind';
+config.bosh = '{{ $PUBLIC_URL }}/' + subdir + 'http-bind';
 {{ else -}}
-config.bosh = 'https://{{ $PUBLIC_URL_DOMAIN}}/http-bind';
+config.bosh = '{{ $PUBLIC_URL }}/http-bind';
 {{ end -}}
 {{ end -}}
 
 {{ if $ENABLE_XMPP_WEBSOCKET -}}
 {{ if $ENABLE_SUBDOMAINS -}}
-config.websocket = 'wss://{{ $PUBLIC_URL_DOMAIN }}/' + subdir + 'xmpp-websocket';
+config.websocket = 'wss://{{ $HOSTNAME }}:${HTTPS_PORT}/' + subdir + 'xmpp-websocket';
 {{ else -}}
-config.websocket = 'wss://{{ $PUBLIC_URL_DOMAIN }}/xmpp-websocket';
+config.websocket = 'wss://{{ $HOSTNAME }}:${HTTPS_PORT}/xmpp-websocket';
 {{ end -}}
 {{ end -}}
 
