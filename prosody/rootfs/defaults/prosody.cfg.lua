@@ -26,6 +26,7 @@ consider_websocket_secure = true
 
 VirtualHost "${XMPP_AUTH_DOMAIN}"
     authentication = "internal_hashed"
+    storage = "internal"
     ssl = {
         key = "/config/certs/${XMPP_AUTH_DOMAIN}.key";
         certificate = "/config/certs/${XMPP_AUTH_DOMAIN}.crt";
