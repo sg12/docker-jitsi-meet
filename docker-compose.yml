@@ -223,6 +223,8 @@ services:
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
             - ./prosody/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
             - /root/jitsi-meet.cfg.lua:/config/conf.d/jitsi-meet.cfg.lua:ro
+            - /etc/ssl/fullchain.pem:/config/certs/recorder.meet.jitsi.crt:ro
+            - /etc/ssl/privkey.pem:/config/certs/recorder.meet.jitsi.key:ro
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
