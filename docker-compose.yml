@@ -227,6 +227,8 @@ services:
             - ./prosody/rootfs/defaults/prosody.cfg.lua:/config/prosody.cfg.lua:ro
             - ./prosody/rootfs/defaults/jitsi-meet.cfg.lua:/defaults/jitsi-meet.cfg.lua:ro
             #- /root/jitsi-meet.cfg.lua:/config/conf.d/jitsi-meet.cfg.lua:ro
+        env_file:
+            - .env
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
