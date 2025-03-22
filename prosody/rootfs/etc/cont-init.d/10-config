@@ -21,6 +21,7 @@ PROSODY_SITE_CFG="jitsi-meet.cfg.lua"
 mkdir -p /config/certs /config/conf.d
 cp -rn /defaults/* /config
 
+# Временная отладка: включаем debug логи
 sed -i 's|min = "info"|min = "debug"|' "$PROSODY_CFG"
 
 # Установка режима Prosody
@@ -129,7 +130,6 @@ Component "metadata.$FIRST_DOMAIN" "room_metadata_component"
     breakout_rooms_component = "breakout.$FIRST_DOMAIN"
 EOF
 
-
 cat <<EOF >> "/config/conf.d/$PROSODY_SITE_CFG"
 Component "muc.$FIRST_DOMAIN" "muc"
     storage = "memory"
@@ -139,11 +139,15 @@ Component "muc.$FIRST_DOMAIN" "muc"
     modules_enabled = { "muc_meeting_id"; "muc_domain_mapper"; "polls"; }
 EOF
 
-
 # Копирование плагинов (если доступны)
 if [ -d /prosody-plugins ]; then
     cp -r /prosody-plugins/* /usr/lib/prosody/modules/
 fi
+
+# Создание директории для учетных данных пользователей
+mkdir -p /config/data/auth.meet.jitsi/accounts
+chown prosody:prosody /config/data/auth.meet.jitsi/accounts
+chmod 700 /config/data/auth.meet.jitsi/accounts
 
 # Регистрация пользователей
 [ -z "${JIBRI_RECORDER_USER}" ] && export JIBRI_RECORDER_USER=recorder
@@ -151,14 +155,22 @@ fi
 [ -z "${JIGASI_XMPP_USER}" ] && export JIGASI_XMPP_USER=jigasi
 [ -z "${JVB_AUTH_USER}" ] && export JVB_AUTH_USER=jvb
 
+echo "Registering focus user..."
 echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register focus "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
+echo "Registering jvb user..."
 echo "$JVB_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JVB_AUTH_USER" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
 if [[ ! -z $JIBRI_XMPP_PASSWORD ]]; then
+    echo "Registering jibri user..."
     echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIBRI_XMPP_USER" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
 fi
 if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
+    echo "Registering jigasi user..."
     echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIGASI_XMPP_USER" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
 fi
+
+# Проверка результата регистрации
+echo "Checking registered users..."
+ls -l /config/data/auth.meet.jitsi/accounts/
 
 # Генерация сертификатов для всех доменов
 for DOMAIN in "${DOMAINS[@]}"; do
@@ -193,5 +205,6 @@ fi
 # Очистка .cnf файлов
 rm -f /var/lib/prosody/*.cnf
 
+# Установка прав на конфигурационный файл
 chown prosody:prosody "$PROSODY_CFG"
 chmod 644 "$PROSODY_CFG"
