@@ -1,3 +1,5 @@
+data_path = "/config/data"  -- Явно указываем путь к данным
+
 admins = { "focus@${XMPP_AUTH_DOMAIN}", "jvb@${XMPP_AUTH_DOMAIN}", "jibri@${XMPP_AUTH_DOMAIN}", "jigasi@${XMPP_AUTH_DOMAIN}" }
 unlimited_jids = { "focus@${XMPP_AUTH_DOMAIN}", "jvb@${XMPP_AUTH_DOMAIN}" }
 plugin_paths = { "/prosody-plugins/", "/prosody-plugins-custom", "/prosody-plugins-contrib" }
