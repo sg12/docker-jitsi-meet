@@ -202,6 +202,8 @@ services:
             - XMPP_RECORDER_DOMAIN
             - WHITEBOARD_COLLAB_SERVER_PUBLIC_URL
             - WHITEBOARD_COLLAB_SERVER_URL_BASE
+            - HTTPS_PORT=8443
+            - PUBLIC_URL=https://jitsi-connectrm-test.ru:8443
         networks:
             meet.jitsi:
         depends_on:
