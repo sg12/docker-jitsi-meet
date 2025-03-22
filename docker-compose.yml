@@ -29,6 +29,7 @@ services:
             - ./web/rootfs/defaults/settings-config.js:/defaults/settings-config.js:ro
             - ./web/rootfs/defaults/interface_config.js:/defaults/interface_config.js:ro
             - ./web/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
+            - ./web/rootfs/defaults/ffdhe2048.txt:/defaults/ffdhe2048.txt:ro
 
         labels:
             service: "jitsi-web"
