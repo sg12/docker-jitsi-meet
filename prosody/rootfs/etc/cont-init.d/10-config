@@ -29,14 +29,14 @@ if [[ "$PROSODY_MODE" == "visitors" ]]; then
     PROSODY_SITE_CFG="visitors.cfg.lua"
     rm /config/conf.d/jitsi-meet.cfg.lua
     rm /config/conf.d/brewery.cfg.lua
-    [ -z "$XMPP_AUTH_DOMAIN" ] && XMPP_AUTH_DOMAIN="auth.meet.jitsi"
+    [ -z "$XMPP_AUTH_DOMAIN" ] && export XMPP_AUTH_DOMAIN="auth.meet.jitsi"
     export PROSODY_ADMINS="focus@$XMPP_AUTH_DOMAIN"
 elif [[ "$PROSODY_MODE" == "brewery" ]]; then
     echo "Prosody brewery mode, using alternate config"
     PROSODY_SITE_CFG="brewery.cfg.lua"
     rm /config/conf.d/jitsi-meet.cfg.lua
     rm /config/conf.d/visitors.cfg.lua
-    [ -z "$JVB_XMPP_AUTH_DOMAIN" ] && JVB_XMPP_AUTH_DOMAIN="auth.meet.jitsi"
+    [ -z "$JVB_XMPP_AUTH_DOMAIN" ] && export JVB_XMPP_AUTH_DOMAIN="auth.meet.jitsi"
     export XMPP_AUTH_DOMAIN="$JVB_XMPP_AUTH_DOMAIN"
     export PROSODY_C2S_REQUIRE_ENCRYPTION="true"
     mkdir -p /config/rules.d
@@ -47,6 +47,13 @@ else
     rm /config/conf.d/visitors.cfg.lua
     rm /config/conf.d/brewery.cfg.lua
 fi
+
+# Экспорт переменных для tpl
+export XMPP_DOMAINS="${XMPP_DOMAINS}"
+export XMPP_AUTH_DOMAIN="${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}"
+export XMPP_RECORDER_DOMAIN="${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}"
+export JWT_APP_ID="${JWT_APP_ID}"
+export JWT_APP_SECRET="${JWT_APP_SECRET}"
 
 # Проверка обязательных переменных
 if [[ -z $JICOFO_AUTH_PASSWORD ]]; then
@@ -70,8 +77,37 @@ if [[ -z $JWT_APP_SECRET ]]; then
     exit 1
 fi
 
-# Копирование и обработка шаблонов
+# Копирование и обработка шаблона prosody.cfg.lua
 tpl /defaults/prosody.cfg.lua > "$PROSODY_CFG"
+
+# Добавление VirtualHost для каждого домена из XMPP_DOMAINS
+IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
+for DOMAIN in "${DOMAINS[@]}"; do
+    cat <<EOF >> "$PROSODY_CFG"
+VirtualHost "$DOMAIN"
+    authentication = "token"
+    app_id = "$JWT_APP_ID"
+    app_secret = "$JWT_APP_SECRET"
+    allow_empty_token = false
+    ssl = {
+        key = "/config/certs/$DOMAIN.key";
+        certificate = "/config/certs/$DOMAIN.crt";
+    }
+    modules_enabled = {
+        "bosh"; "websocket"; "smacks"; "speakerstats"; "conference_duration"; "room_metadata";
+        "end_conference"; "muc_lobby_rooms"; "muc_breakout_rooms"; "av_moderation"; "token_verification";
+    }
+    main_muc = "muc.$DOMAIN"
+    lobby_muc = "lobby.$DOMAIN"
+    breakout_rooms_muc = "breakout.$DOMAIN"
+    speakerstats_component = "speakerstats.$DOMAIN"
+    conference_duration_component = "conferenceduration.$DOMAIN"
+    end_conference_component = "endconference.$DOMAIN"
+    av_moderation_component = "avmoderation.$DOMAIN"
+EOF
+done
+
+# Копирование и обработка шаблона jitsi-meet.cfg.lua
 tpl /defaults/$PROSODY_SITE_CFG > "/config/conf.d/$PROSODY_SITE_CFG"
 
 # Регистрация пользователей
@@ -90,7 +126,6 @@ if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
 fi
 
 # Генерация сертификатов для всех доменов
-IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
 for DOMAIN in "${DOMAINS[@]}"; do
     if [[ ! -f /config/certs/$DOMAIN.crt ]]; then
         echo "Generating certificate for $DOMAIN"
