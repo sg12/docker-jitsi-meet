@@ -50,10 +50,10 @@ fi
 # copy config files
 tpl /defaults/nginx.conf > /etc/nginx/nginx.conf
 
-tpl /defaults/meet.conf > /etc/nginx/conf.d/meet.conf
-if [[ -f /config/nginx/custom-meet.conf ]]; then
-    cat /config/nginx/custom-meet.conf >> /etc/nginx/conf.d/meet.conf
-fi
+#tpl /defaults/meet.conf > /etc/nginx/conf.d/meet.conf
+#if [[ -f /config/nginx/custom-meet.conf ]]; then
+#    cat /config/nginx/custom-meet.conf >> /etc/nginx/conf.d/meet.conf
+#fi
 
 tpl /defaults/ssl.conf > /etc/nginx/conf.d/ssl.conf
 
