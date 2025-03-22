@@ -127,6 +127,17 @@ Component "metadata.$FIRST_DOMAIN" "room_metadata_component"
     breakout_rooms_component = "breakout.$FIRST_DOMAIN"
 EOF
 
+
+cat <<EOF >> "/config/conf.d/$PROSODY_SITE_CFG"
+Component "muc.$FIRST_DOMAIN" "muc"
+    storage = "memory"
+    restrict_room_creation = true
+    muc_room_locking = false
+    muc_room_default_public_jids = true
+    modules_enabled = { "muc_meeting_id"; "muc_domain_mapper"; "polls"; }
+EOF
+
+
 # Копирование плагинов (если доступны)
 if [ -d /prosody-plugins ]; then
     cp -r /prosody-plugins/* /usr/lib/prosody/modules/
