@@ -74,38 +74,7 @@ fi
 IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
 FIRST_DOMAIN="${DOMAINS[0]}"
 
-# Копирование и обработка шаблона prosody.cfg.lua
-sed -e "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}|g" \
-    -e "s|\${XMPP_DOMAINS}|${XMPP_DOMAINS}|g" \
-    -e "s|\${XMPP_DOMAINS%%,\*}|${FIRST_DOMAIN}|g" \
-    /defaults/prosody.cfg.lua > "$PROSODY_CFG"
-
-# Добавление VirtualHost для каждого домена из XMPP_DOMAINS
-for DOMAIN in "${DOMAINS[@]}"; do
-    cat <<EOF >> "$PROSODY_CFG"
-VirtualHost "$DOMAIN"
-    authentication = "token"
-    app_id = "$JWT_APP_ID"
-    app_secret = "$JWT_APP_SECRET"
-    allow_empty_token = false
-    ssl = {
-        key = "/config/certs/$DOMAIN.key";
-        certificate = "/config/certs/$DOMAIN.crt";
-    }
-    modules_enabled = {
-        "bosh"; "websocket"; "smacks"; "speakerstats"; "conference_duration"; "room_metadata";
-        "end_conference"; "muc_lobby_rooms"; "muc_breakout_rooms"; "av_moderation"; "token_verification";
-    }
-    main_muc = "muc.$DOMAIN"
-    lobby_muc = "lobby.$DOMAIN"
-    breakout_rooms_muc = "breakout.$DOMAIN"
-    speakerstats_component = "speakerstats.$DOMAIN"
-    conference_duration_component = "conferenceduration.$DOMAIN"
-    end_conference_component = "endconference.$DOMAIN"
-    av_moderation_component = "avmoderation.$DOMAIN"
-EOF
-done
-
+# Не перезаписываем prosody.cfg.lua, так как он монтируется из Git
 # Копирование и обработка шаблона jitsi-meet.cfg.lua
 sed -e "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}|g" \
     -e "s|\${XMPP_RECORDER_DOMAIN}|${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}|g" \
