@@ -21,6 +21,8 @@ PROSODY_SITE_CFG="jitsi-meet.cfg.lua"
 mkdir -p /config/certs /config/conf.d
 cp -rn /defaults/* /config
 
+sed -i 's|min = "info"|min = "debug"|' "$PROSODY_CFG"
+
 # Установка режима Prosody
 [ -z "$PROSODY_MODE" ] && export PROSODY_MODE="client"
 
