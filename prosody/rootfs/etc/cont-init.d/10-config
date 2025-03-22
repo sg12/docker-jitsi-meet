@@ -29,7 +29,7 @@ if [[ "$(stat -c %U /prosody-plugins-contrib)" != "prosody" ]]; then
     chown -R prosody /prosody-plugins-contrib
 fi
 
-mkdir /config/certs
+mkdir -p /config/certs
 cp -rn /defaults/* /config
 
 [ -z "$PROSODY_MODE" ] && export PROSODY_MODE="client"
@@ -57,6 +57,7 @@ else
     rm /config/conf.d/visitors.cfg.lua
     rm /config/conf.d/brewery.cfg.lua
 fi
+
 tpl /defaults/prosody.cfg.lua > $PROSODY_CFG
 tpl /defaults/conf.d/$PROSODY_SITE_CFG > /config/conf.d/$PROSODY_SITE_CFG
 
@@ -128,23 +129,30 @@ if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
     prosodyctl --config $PROSODY_CFG register $JIGASI_XMPP_USER $XMPP_AUTH_DOMAIN $JIGASI_XMPP_PASSWORD
 fi
 
+# Generate certificates for all required domains and move them to /config/certs/
 if [[ "$PROSODY_MODE" == "visitors" ]]; then
     [ -z "$VISITORS_XMPP_DOMAIN" ] && VISITORS_XMPP_DOMAIN="meet.jitsi"
     [ -z "$PROSODY_VISITOR_INDEX" ] && PROSODY_VISITOR_INDEX=0
     FULL_VISITORS_XMPP_DOMAIN="v$PROSODY_VISITOR_INDEX.$VISITORS_XMPP_DOMAIN"
     if [[ ! -f /config/certs/$FULL_VISITORS_XMPP_DOMAIN.crt ]]; then
         echo | prosodyctl --config $PROSODY_CFG cert generate $FULL_VISITORS_XMPP_DOMAIN
+        cp -f /config/data/$FULL_VISITORS_XMPP_DOMAIN.crt /config/certs/$FULL_VISITORS_XMPP_DOMAIN.crt
+        cp -f /config/data/$FULL_VISITORS_XMPP_DOMAIN.key /config/certs/$FULL_VISITORS_XMPP_DOMAIN.key
     fi
 elif [[ "$PROSODY_MODE" == "brewery" ]]; then
     echo "No need to generate certs for main XMPP domain in brewery mode"
 else
     if [[ ! -f /config/certs/$XMPP_DOMAIN.crt ]]; then
         echo | prosodyctl --config $PROSODY_CFG cert generate $XMPP_DOMAIN
+        cp -f /config/data/$XMPP_DOMAIN.crt /config/certs/$XMPP_DOMAIN.crt
+        cp -f /config/data/$XMPP_DOMAIN.key /config/certs/$XMPP_DOMAIN.key
     fi
 fi
 
 if [[ ! -f /config/certs/$XMPP_AUTH_DOMAIN.crt ]]; then
     echo | prosodyctl --config $PROSODY_CFG cert generate $XMPP_AUTH_DOMAIN
+    cp -f /config/data/$XMPP_AUTH_DOMAIN.crt /config/certs/$XMPP_AUTH_DOMAIN.crt
+    cp -f /config/data/$XMPP_AUTH_DOMAIN.key /config/certs/$XMPP_AUTH_DOMAIN.key
 fi
 
 # Generate and move recorder.meet.jitsi certificates if they don't exist
@@ -154,6 +162,5 @@ if [[ ! -f /config/certs/recorder.meet.jitsi.crt ]]; then
     cp -f /config/data/recorder.meet.jitsi.key /config/certs/recorder.meet.jitsi.key
 fi
 
-# certs will be created in /config/data
-cp -f /config/data/*.{crt,key} /config/certs/
+# Clean up .cnf files
 rm -f /config/data/*.cnf
