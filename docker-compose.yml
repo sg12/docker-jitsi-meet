@@ -341,6 +341,7 @@ services:
             - XMPP_BREAKOUT_MUC_MODULES
             - XMPP_CONFIGURATION
             - XMPP_DOMAIN
+            - XMPP_DOMAINS
             - XMPP_AUTH_DOMAIN
             - XMPP_GUEST_DOMAIN
             - XMPP_MUC_DOMAIN
