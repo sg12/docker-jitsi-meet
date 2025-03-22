@@ -70,13 +70,17 @@ if [[ -z $JWT_APP_SECRET ]]; then
     exit 1
 fi
 
+# Получение первого домена из XMPP_DOMAINS
+IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
+FIRST_DOMAIN="${DOMAINS[0]}"
+
 # Копирование и обработка шаблона prosody.cfg.lua
 sed -e "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}|g" \
     -e "s|\${XMPP_DOMAINS}|${XMPP_DOMAINS}|g" \
+    -e "s|\${XMPP_DOMAINS%%,\*}|${FIRST_DOMAIN}|g" \
     /defaults/prosody.cfg.lua > "$PROSODY_CFG"
 
 # Добавление VirtualHost для каждого домена из XMPP_DOMAINS
-IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
 for DOMAIN in "${DOMAINS[@]}"; do
     cat <<EOF >> "$PROSODY_CFG"
 VirtualHost "$DOMAIN"
@@ -108,7 +112,6 @@ sed -e "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}|g" \
     /defaults/$PROSODY_SITE_CFG > "/config/conf.d/$PROSODY_SITE_CFG"
 
 # Добавление компонентов для первого домена
-FIRST_DOMAIN="${DOMAINS[0]}"
 cat <<EOF >> "/config/conf.d/$PROSODY_SITE_CFG"
 Component "conference.$FIRST_DOMAIN" "muc"
     storage = "memory"
@@ -149,6 +152,11 @@ Component "metadata.$FIRST_DOMAIN" "room_metadata_component"
     muc_component = "muc.$FIRST_DOMAIN"
     breakout_rooms_component = "breakout.$FIRST_DOMAIN"
 EOF
+
+# Копирование плагинов (если доступны)
+if [ -d /prosody-plugins ]; then
+    cp -r /prosody-plugins/* /usr/lib/prosody/modules/
+fi
 
 # Регистрация пользователей
 [ -z "${JIBRI_RECORDER_USER}" ] && export JIBRI_RECORDER_USER=recorder
