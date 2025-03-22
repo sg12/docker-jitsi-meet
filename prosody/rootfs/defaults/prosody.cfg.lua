@@ -4,7 +4,7 @@ plugin_paths = { "/prosody-plugins/", "/prosody-plugins-custom", "/prosody-plugi
 
 modules_enabled = {
     "roster"; "saslauth"; "tls"; "disco"; "private"; "limits"; "version"; "ping"; "posix"; "http_health";
-    "bosh"; "websocket"; "pubsub"; "presence_identity";
+    "bosh"; "websocket"; "pubsub"; "presence_identity"; "admin_shell";
 }
 modules_disabled = {}
 
