@@ -59,14 +59,12 @@ server {
         }
     }
 
-    # BOSH для Prosody
     location = /http-bind {
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header Host meet.jitsi;
-        proxy_pass http://docker-jitsi-meet_prosody_1:5280/http-bind;
+        proxy_pass http://docker-jitsi-meet-prosody-1:5280/http-bind;
     }
 
-    # XMPP WebSocket для Prosody
     location = /xmpp-websocket {
         tcp_nodelay on;
         proxy_http_version 1.1;
@@ -74,7 +72,7 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Host meet.jitsi;
         proxy_set_header X-Forwarded-For $remote_addr;
-        proxy_pass http://docker-jitsi-meet_prosody_1:5280/xmpp-websocket;
+        proxy_pass http://docker-jitsi-meet-prosody-1:5280/xmpp-websocket;
     }
 
     # Обработка комнат
