@@ -62,7 +62,7 @@ server {
 
     location = /http-bind {
         proxy_set_header X-Forwarded-For $remote_addr;
-        proxy_set_header Host meet.jitsi;
+        proxy_set_header Host jitsi-connectrm-test.ru;
         proxy_pass http://docker-jitsi-meet-prosody-1:5280/http-bind;
     }
 
