@@ -372,6 +372,7 @@ services:
         volumes:
             - ${CONFIG}/jicofo:/config:Z
             - ./jicofo/rootfs/defaults/jicofo.conf:/config/jicofo.conf:ro
+            - ./jicofo/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
         labels:
             service: "jitsi-jicofo"
         environment:
