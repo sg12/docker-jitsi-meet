@@ -9,6 +9,7 @@ if [[ ! -f /etc/saslauthd.conf ]] && [[ "$AUTH_TYPE" == "ldap" ]]; then
 fi
 
 PROSODY_CFG="/config/prosody.cfg.lua"
+PROSODY_SITE_CFG="jitsi-meet.cfg.lua"
 
 # Создание директорий и настройка прав
 [[ ! -d /config/data ]] && mkdir -pm 750 /config/data
@@ -17,7 +18,7 @@ PROSODY_CFG="/config/prosody.cfg.lua"
 [[ "$(stat -c %U /prosody-plugins-custom)" != "prosody" ]] && chown -R prosody /prosody-plugins-custom
 [[ "$(stat -c %U /prosody-plugins-contrib)" != "prosody" ]] && chown -R prosody /prosody-plugins-contrib
 
-mkdir -p /config/certs
+mkdir -p /config/certs /config/conf.d
 cp -rn /defaults/* /config
 
 # Установка режима Prosody
@@ -60,137 +61,18 @@ if [[ -z $XMPP_DOMAINS ]]; then
     echo 'FATAL ERROR: XMPP_DOMAINS must be set'
     exit 1
 fi
+if [[ -z $JWT_APP_ID ]]; then
+    echo 'FATAL ERROR: JWT_APP_ID must be set'
+    exit 1
+fi
+if [[ -z $JWT_APP_SECRET ]]; then
+    echo 'FATAL ERROR: JWT_APP_SECRET must be set'
+    exit 1
+fi
 
-# Генерация базового prosody.cfg.lua
-cat <<EOF > $PROSODY_CFG
-admins = { "focus@$XMPP_AUTH_DOMAIN", "jvb@$XMPP_AUTH_DOMAIN", "jibri@$XMPP_AUTH_DOMAIN", "jigasi@$XMPP_AUTH_DOMAIN" }
-unlimited_jids = { "focus@$XMPP_AUTH_DOMAIN", "jvb@$XMPP_AUTH_DOMAIN" }
-plugin_paths = { "/prosody-plugins/", "/prosody-plugins-custom", "/prosody-plugins-contrib" }
-
-modules_enabled = {
-    "roster"; "saslauth"; "tls"; "disco"; "private"; "limits"; "version"; "ping"; "posix"; "http_health";
-    "bosh"; "websocket"; "pubsub"; "presence_identity";
-}
-modules_disabled = {}
-
-http_ports = { 5280 }
-http_interfaces = { "*", "::" }
-c2s_require_encryption = true
-c2s_ports = { 5222 }
-c2s_interfaces = { "*", "::" }
-
-log = {
-    { levels = {min = "info"}, timestamps = "%Y-%m-%d %X", to = "console" };
-}
-
-muc_mapper_domain_base = "$XMPP_DOMAINS"
-http_default_host = "${XMPP_DOMAINS%%,*}"  -- Первый домен из списка
-
-consider_bosh_secure = true
-consider_websocket_secure = true
-
--- Виртуальные хосты для всех доменов из XMPP_DOMAINS
-EOF
-
-# Разделяем XMPP_DOMAINS на массив
-IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
-
-# Генерация VirtualHost для каждого домена
-for DOMAIN in "${DOMAINS[@]}"; do
-    cat <<EOF >> $PROSODY_CFG
-VirtualHost "$DOMAIN"
-    authentication = "token"
-    app_id = "$JWT_APP_ID"
-    app_secret = "$JWT_APP_SECRET"
-    allow_empty_token = false
-    ssl = {
-        key = "/config/certs/$DOMAIN.key";
-        certificate = "/config/certs/$DOMAIN.crt";
-    }
-    modules_enabled = {
-        "bosh"; "websocket"; "smacks"; "speakerstats"; "conference_duration"; "room_metadata";
-        "end_conference"; "muc_lobby_rooms"; "muc_breakout_rooms"; "av_moderation"; "token_verification";
-    }
-    main_muc = "muc.$DOMAIN"
-    lobby_muc = "lobby.$DOMAIN"
-    breakout_rooms_muc = "breakout.$DOMAIN"
-    speakerstats_component = "speakerstats.$DOMAIN"
-    conference_duration_component = "conferenceduration.$DOMAIN"
-    end_conference_component = "endconference.$DOMAIN"
-    av_moderation_component = "avmoderation.$DOMAIN"
-EOF
-done
-
-# Добавление VirtualHost для auth и include
-cat <<EOF >> $PROSODY_CFG
-VirtualHost "$XMPP_AUTH_DOMAIN"
-    authentication = "internal_hashed"
-    ssl = {
-        key = "/config/certs/$XMPP_AUTH_DOMAIN.key";
-        certificate = "/config/certs/$XMPP_AUTH_DOMAIN.crt";
-    }
-    modules_enabled = { "limits_exception"; "smacks"; }
-
-Include "conf.d/*.cfg.lua"
-EOF
-
-# Генерация jitsi-meet.cfg.lua
-FIRST_DOMAIN="${DOMAINS[0]}"  # Первый домен как основной для MUC
-cat <<EOF > /config/conf.d/$PROSODY_SITE_CFG
-Component "conference.$FIRST_DOMAIN" "muc"
-    storage = "memory"
-    restrict_room_creation = true
-    muc_room_locking = false
-    muc_room_default_public_jids = true
-    modules_enabled = { "muc_meeting_id"; "muc_domain_mapper"; "polls"; }
-
-Component "internal-muc.meet.jitsi" "muc"
-    storage = "memory"
-    restrict_room_creation = true
-    muc_room_locking = false
-    muc_room_default_public_jids = true
-    modules_enabled = { "muc_hide_all"; "muc_filter_access"; }
-    muc_filter_whitelist = "$XMPP_AUTH_DOMAIN"
-
-Component "focus.$FIRST_DOMAIN" "client_proxy"
-    target_address = "focus@$XMPP_AUTH_DOMAIN"
-
-Component "speakerstats.$FIRST_DOMAIN" "speakerstats_component"
-    muc_component = "muc.$FIRST_DOMAIN"
-
-Component "conferenceduration.$FIRST_DOMAIN" "conference_duration_component"
-    muc_component = "muc.$FIRST_DOMAIN"
-
-Component "endconference.$FIRST_DOMAIN" "end_conference"
-    muc_component = "muc.$FIRST_DOMAIN"
-
-Component "avmoderation.$FIRST_DOMAIN" "av_moderation_component"
-    muc_component = "muc.$FIRST_DOMAIN"
-
-Component "lobby.$FIRST_DOMAIN" "muc"
-    storage = "memory"
-    restrict_room_creation = true
-    muc_room_locking = false
-    muc_room_default_public_jids = true
-
-Component "breakout.$FIRST_DOMAIN" "muc"
-    storage = "memory"
-    restrict_room_creation = true
-    muc_room_locking = false
-    muc_room_default_public_jids = true
-    modules_enabled = { "muc_meeting_id"; "polls"; }
-
-Component "metadata.$FIRST_DOMAIN" "room_metadata_component"
-    muc_component = "muc.$FIRST_DOMAIN"
-    breakout_rooms_component = "breakout.$FIRST_DOMAIN"
-
-VirtualHost "$XMPP_RECORDER_DOMAIN"
-    authentication = "internal_hashed"
-    ssl = {
-        key = "/config/certs/$XMPP_RECORDER_DOMAIN.key";
-        certificate = "/config/certs/$XMPP_RECORDER_DOMAIN.crt";
-    }
-EOF
+# Копирование и обработка шаблонов
+tpl /defaults/prosody.cfg.lua > "$PROSODY_CFG"
+tpl /defaults/$PROSODY_SITE_CFG > "/config/conf.d/$PROSODY_SITE_CFG"
 
 # Регистрация пользователей
 [ -z "${JIBRI_RECORDER_USER}" ] && export JIBRI_RECORDER_USER=recorder
@@ -198,23 +80,23 @@ EOF
 [ -z "${JIGASI_XMPP_USER}" ] && export JIGASI_XMPP_USER=jigasi
 [ -z "${JVB_AUTH_USER}" ] && export JVB_AUTH_USER=jvb
 
-echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config $PROSODY_CFG register focus $XMPP_AUTH_DOMAIN -
-echo "$JVB_AUTH_PASSWORD" | prosodyctl --config $PROSODY_CFG register $JVB_AUTH_USER $XMPP_AUTH_DOMAIN -
-
+echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register focus "$XMPP_AUTH_DOMAIN" -
+echo "$JVB_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JVB_AUTH_USER" "$XMPP_AUTH_DOMAIN" -
 if [[ ! -z $JIBRI_XMPP_PASSWORD ]]; then
-    echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config $PROSODY_CFG register $JIBRI_XMPP_USER $XMPP_AUTH_DOMAIN -
+    echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIBRI_XMPP_USER" "$XMPP_AUTH_DOMAIN" -
 fi
 if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
-    echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config $PROSODY_CFG register $JIGASI_XMPP_USER $XMPP_AUTH_DOMAIN -
+    echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIGASI_XMPP_USER" "$XMPP_AUTH_DOMAIN" -
 fi
 
 # Генерация сертификатов для всех доменов
+IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
 for DOMAIN in "${DOMAINS[@]}"; do
     if [[ ! -f /config/certs/$DOMAIN.crt ]]; then
         echo "Generating certificate for $DOMAIN"
-        echo | prosodyctl --config $PROSODY_CFG cert generate "$DOMAIN"
-        cp -f /config/data/"$DOMAIN.crt" /config/certs/"$DOMAIN.crt"
-        cp -f /config/data/"$DOMAIN.key" /config/certs/"$DOMAIN.key"
+        echo | prosodyctl --config "$PROSODY_CFG" cert generate "$DOMAIN"
+        cp -f /var/lib/prosody/"$DOMAIN.crt" /config/certs/"$DOMAIN.crt"
+        cp -f /var/lib/prosody/"$DOMAIN.key" /config/certs/"$DOMAIN.key"
         chown prosody:prosody /config/certs/"$DOMAIN".{crt,key}
         chmod 640 /config/certs/"$DOMAIN".{crt,key}
     fi
@@ -222,21 +104,21 @@ done
 
 if [[ ! -f /config/certs/$XMPP_AUTH_DOMAIN.crt ]]; then
     echo "Generating certificate for $XMPP_AUTH_DOMAIN"
-    echo | prosodyctl --config $PROSODY_CFG cert generate "$XMPP_AUTH_DOMAIN"
-    cp -f /config/data/"$XMPP_AUTH_DOMAIN.crt" /config/certs/"$XMPP_AUTH_DOMAIN.crt"
-    cp -f /config/data/"$XMPP_AUTH_DOMAIN.key" /config/certs/"$XMPP_AUTH_DOMAIN.key"
+    echo | prosodyctl --config "$PROSODY_CFG" cert generate "$XMPP_AUTH_DOMAIN"
+    cp -f /var/lib/prosody/"$XMPP_AUTH_DOMAIN.crt" /config/certs/"$XMPP_AUTH_DOMAIN.crt"
+    cp -f /var/lib/prosody/"$XMPP_AUTH_DOMAIN.key" /config/certs/"$XMPP_AUTH_DOMAIN.key"
     chown prosody:prosody /config/certs/"$XMPP_AUTH_DOMAIN".{crt,key}
     chmod 640 /config/certs/"$XMPP_AUTH_DOMAIN".{crt,key}
 fi
 
 if [[ ! -f /config/certs/$XMPP_RECORDER_DOMAIN.crt ]]; then
     echo "Generating certificate for $XMPP_RECORDER_DOMAIN"
-    echo | prosodyctl --config $PROSODY_CFG cert generate "$XMPP_RECORDER_DOMAIN"
-    cp -f /config/data/"$XMPP_RECORDER_DOMAIN.crt" /config/certs/"$XMPP_RECORDER_DOMAIN.crt"
-    cp -f /config/data/"$XMPP_RECORDER_DOMAIN.key" /config/certs/"$XMPP_RECORDER_DOMAIN.key"
+    echo | prosodyctl --config "$PROSODY_CFG" cert generate "$XMPP_RECORDER_DOMAIN"
+    cp -f /var/lib/prosody/"$XMPP_RECORDER_DOMAIN.crt" /config/certs/"$XMPP_RECORDER_DOMAIN.crt"
+    cp -f /var/lib/prosody/"$XMPP_RECORDER_DOMAIN.key" /config/certs/"$XMPP_RECORDER_DOMAIN.key"
     chown prosody:prosody /config/certs/"$XMPP_RECORDER_DOMAIN".{crt,key}
     chmod 640 /config/certs/"$XMPP_RECORDER_DOMAIN".{crt,key}
 fi
 
 # Очистка .cnf файлов
-rm -f /config/data/*.cnf
+rm -f /var/lib/prosody/*.cnf
