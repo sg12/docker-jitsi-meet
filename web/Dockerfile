@@ -4,7 +4,6 @@ LABEL org.opencontainers.image.source="https://github.com/sg12/jitsi-meet"
 
 RUN apt-dpkg-wrap apt-get update && apt-dpkg-wrap apt-get install -y git
 
-# Проверка перед клонированием
 RUN echo "Cloning from https://github.com/sg12/jitsi-meet, branch develop"
 
 RUN git clone --depth 1 -b develop https://github.com/sg12/jitsi-meet.git /usr/share/jitsi-meet || \
@@ -14,11 +13,11 @@ ADD https://raw.githubusercontent.com/acmesh-official/acme.sh/3.0.7/acme.sh /opt
 
 RUN apt-dpkg-wrap apt-get update && \
     apt-dpkg-wrap apt-get install -y dnsutils cron nginx-extras jitsi-meet-web socat curl jq && \
-    mv /usr/share/jitsi-meet/interface_config.js /defaults && \
+    mkdir -p /defaults && \
+    mv /usr/share/jitsi-meet/interface_config.js /defaults/interface_config.js && \
     rm -f /etc/nginx/conf.d/default.conf && \
     apt-cleanup
 
-# Копируем правильный файл из web/rootfs/defaults/default
 COPY web/rootfs/defaults/default /etc/nginx/sites-available/default
 RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
