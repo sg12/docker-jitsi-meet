@@ -47,6 +47,20 @@ else
     rm /config/conf.d/brewery.cfg.lua
 fi
 
+# Проверка обязательных переменных
+if [[ -z $JICOFO_AUTH_PASSWORD ]]; then
+    echo 'FATAL ERROR: Jicofo auth password must be set'
+    exit 1
+fi
+if [[ -z $JVB_AUTH_PASSWORD ]]; then
+    echo 'FATAL ERROR: JVB auth password must be set'
+    exit 1
+fi
+if [[ -z $XMPP_DOMAINS ]]; then
+    echo 'FATAL ERROR: XMPP_DOMAINS must be set'
+    exit 1
+fi
+
 # Генерация базового prosody.cfg.lua
 cat <<EOF > $PROSODY_CFG
 admins = { "focus@$XMPP_AUTH_DOMAIN", "jvb@$XMPP_AUTH_DOMAIN", "jibri@$XMPP_AUTH_DOMAIN", "jigasi@$XMPP_AUTH_DOMAIN" }
@@ -68,6 +82,9 @@ c2s_interfaces = { "*", "::" }
 log = {
     { levels = {min = "info"}, timestamps = "%Y-%m-%d %X", to = "console" };
 }
+
+muc_mapper_domain_base = "$XMPP_DOMAINS"
+http_default_host = "${XMPP_DOMAINS%%,*}"  -- Первый домен из списка
 
 consider_bosh_secure = true
 consider_websocket_secure = true
@@ -176,51 +193,49 @@ VirtualHost "$XMPP_RECORDER_DOMAIN"
 EOF
 
 # Регистрация пользователей
-if [[ -z $JICOFO_AUTH_PASSWORD ]]; then
-    echo 'FATAL ERROR: Jicofo auth password must be set'
-    exit 1
-fi
 [ -z "${JIBRI_RECORDER_USER}" ] && export JIBRI_RECORDER_USER=recorder
 [ -z "${JIBRI_XMPP_USER}" ] && export JIBRI_XMPP_USER=jibri
 [ -z "${JIGASI_XMPP_USER}" ] && export JIGASI_XMPP_USER=jigasi
 [ -z "${JVB_AUTH_USER}" ] && export JVB_AUTH_USER=jvb
 
-prosodyctl --config $PROSODY_CFG register focus $XMPP_AUTH_DOMAIN $JICOFO_AUTH_PASSWORD
-prosodyctl --config $PROSODY_CFG register $JVB_AUTH_USER $XMPP_AUTH_DOMAIN $JVB_AUTH_PASSWORD
+echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config $PROSODY_CFG register focus $XMPP_AUTH_DOMAIN -
+echo "$JVB_AUTH_PASSWORD" | prosodyctl --config $PROSODY_CFG register $JVB_AUTH_USER $XMPP_AUTH_DOMAIN -
 
 if [[ ! -z $JIBRI_XMPP_PASSWORD ]]; then
-    prosodyctl --config $PROSODY_CFG register $JIBRI_XMPP_USER $XMPP_AUTH_DOMAIN $JIBRI_XMPP_PASSWORD
+    echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config $PROSODY_CFG register $JIBRI_XMPP_USER $XMPP_AUTH_DOMAIN -
 fi
 if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
-    prosodyctl --config $PROSODY_CFG register $JIGASI_XMPP_USER $XMPP_AUTH_DOMAIN $JIGASI_XMPP_PASSWORD
+    echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config $PROSODY_CFG register $JIGASI_XMPP_USER $XMPP_AUTH_DOMAIN -
 fi
 
 # Генерация сертификатов для всех доменов
 for DOMAIN in "${DOMAINS[@]}"; do
     if [[ ! -f /config/certs/$DOMAIN.crt ]]; then
         echo "Generating certificate for $DOMAIN"
-        echo | prosodyctl --config $PROSODY_CFG cert generate $DOMAIN
-        cp -f /config/data/$DOMAIN.crt /config/certs/$DOMAIN.crt
-        cp -f /config/data/$DOMAIN.key /config/certs/$DOMAIN.key
-        chown prosody:prosody /config/certs/$DOMAIN.{crt,key}
-        chmod 640 /config/certs/$DOMAIN.{crt,key}
+        echo | prosodyctl --config $PROSODY_CFG cert generate "$DOMAIN"
+        cp -f /config/data/"$DOMAIN.crt" /config/certs/"$DOMAIN.crt"
+        cp -f /config/data/"$DOMAIN.key" /config/certs/"$DOMAIN.key"
+        chown prosody:prosody /config/certs/"$DOMAIN".{crt,key}
+        chmod 640 /config/certs/"$DOMAIN".{crt,key}
     fi
 done
 
 if [[ ! -f /config/certs/$XMPP_AUTH_DOMAIN.crt ]]; then
-    echo | prosodyctl --config $PROSODY_CFG cert generate $XMPP_AUTH_DOMAIN
-    cp -f /config/data/$XMPP_AUTH_DOMAIN.crt /config/certs/$XMPP_AUTH_DOMAIN.crt
-    cp -f /config/data/$XMPP_AUTH_DOMAIN.key /config/certs/$XMPP_AUTH_DOMAIN.key
-    chown prosody:prosody /config/certs/$XMPP_AUTH_DOMAIN.{crt,key}
-    chmod 640 /config/certs/$XMPP_AUTH_DOMAIN.{crt,key}
+    echo "Generating certificate for $XMPP_AUTH_DOMAIN"
+    echo | prosodyctl --config $PROSODY_CFG cert generate "$XMPP_AUTH_DOMAIN"
+    cp -f /config/data/"$XMPP_AUTH_DOMAIN.crt" /config/certs/"$XMPP_AUTH_DOMAIN.crt"
+    cp -f /config/data/"$XMPP_AUTH_DOMAIN.key" /config/certs/"$XMPP_AUTH_DOMAIN.key"
+    chown prosody:prosody /config/certs/"$XMPP_AUTH_DOMAIN".{crt,key}
+    chmod 640 /config/certs/"$XMPP_AUTH_DOMAIN".{crt,key}
 fi
 
 if [[ ! -f /config/certs/$XMPP_RECORDER_DOMAIN.crt ]]; then
-    echo | prosodyctl --config $PROSODY_CFG cert generate $XMPP_RECORDER_DOMAIN
-    cp -f /config/data/$XMPP_RECORDER_DOMAIN.crt /config/certs/$XMPP_RECORDER_DOMAIN.crt
-    cp -f /config/data/$XMPP_RECORDER_DOMAIN.key /config/certs/$XMPP_RECORDER_DOMAIN.key
-    chown prosody:prosody /config/certs/$XMPP_RECORDER_DOMAIN.{crt,key}
-    chmod 640 /config/certs/$XMPP_RECORDER_DOMAIN.{crt,key}
+    echo "Generating certificate for $XMPP_RECORDER_DOMAIN"
+    echo | prosodyctl --config $PROSODY_CFG cert generate "$XMPP_RECORDER_DOMAIN"
+    cp -f /config/data/"$XMPP_RECORDER_DOMAIN.crt" /config/certs/"$XMPP_RECORDER_DOMAIN.crt"
+    cp -f /config/data/"$XMPP_RECORDER_DOMAIN.key" /config/certs/"$XMPP_RECORDER_DOMAIN.key"
+    chown prosody:prosody /config/certs/"$XMPP_RECORDER_DOMAIN".{crt,key}
+    chmod 640 /config/certs/"$XMPP_RECORDER_DOMAIN".{crt,key}
 fi
 
 # Очистка .cnf файлов
