@@ -1,6 +1,5 @@
 #!/usr/bin/with-contenv bash
 
-# make our folders
 mkdir -p \
     /etc/nginx/site-confs \
     /etc/nginx/conf.d \
@@ -8,7 +7,6 @@ mkdir -p \
     /var/lib/nginx/tmp/client_body \
     /var/tmp/nginx
 
-# Detect nameserver for Nginx, if not specified.
 if [[ -z "$NGINX_RESOLVER" ]]; then
     IP_LIST=""
     while read -r line; do
@@ -29,6 +27,9 @@ fi
 
 echo "Using Nginx resolver: =$NGINX_RESOLVER="
 
+# Явно экспортируем HTTPS_PORT
+export HTTPS_PORT=${HTTPS_PORT:-8443}
+
 # colibri-ws settings
 COLIBRI_WEBSOCKET_UNSAFE_REGEX="[a-zA-Z0-9-\._]+"
 if [ -z "$COLIBRI_WEBSOCKET_REGEX" ]; then
@@ -44,20 +45,11 @@ if [ -z "$COLIBRI_WEBSOCKET_REGEX" ]; then
     fi
 fi
 
-# maintain backward compatibility with older variable
 [ -z "${XMPP_HIDDEN_DOMAIN}" ] && export XMPP_HIDDEN_DOMAIN="$XMPP_RECORDER_DOMAIN"
 
-# copy config files
 tpl /defaults/nginx.conf > /etc/nginx/nginx.conf
-
-#tpl /defaults/meet.conf > /etc/nginx/conf.d/meet.conf
-#if [[ -f /config/nginx/custom-meet.conf ]]; then
-#    cat /config/nginx/custom-meet.conf >> /etc/nginx/conf.d/meet.conf
-#fi
-
 tpl /defaults/ssl.conf > /etc/nginx/conf.d/ssl.conf
 
-# Use custom default from /config/nginx/site-confs/default if it exists, otherwise fall back to tpl
 if [[ -f /config/nginx/site-confs/default ]]; then
     cp /config/nginx/site-confs/default /etc/nginx/sites-enabled/default
 else
