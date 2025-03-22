@@ -44,3 +44,10 @@ Component "endconference.joinrm-svz.ru" "end_conference"
 
 Component "avmoderation.joinrm-svz.ru" "av_moderation_component"
     muc_component = "muc.joinrm-svz.ru"
+
+Component "muc.joinrm-svz.ru" "muc"
+    storage = "memory"
+    restrict_room_creation = true
+    muc_room_locking = false
+    muc_room_default_public_jids = true
+    modules_enabled = { "muc_meeting_id"; "muc_domain_mapper"; "polls"; }
