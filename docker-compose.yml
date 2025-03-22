@@ -371,6 +371,7 @@ services:
             - '127.0.0.1:${JICOFO_REST_PORT:-8888}:8888'
         volumes:
             - ${CONFIG}/jicofo:/config:Z
+            - ./jicofo/rootfs/defaults/jicofo.conf:/config/jicofo.conf:ro
         labels:
             service: "jitsi-jicofo"
         environment:
@@ -461,6 +462,7 @@ services:
             - '127.0.0.1:${JVB_COLIBRI_PORT:-8080}:8080'
         volumes:
             - ${CONFIG}/jvb:/config:Z
+            - ./jvb/rootfs/defaults/jvb.conf:/defaults/jvb.conf:ro
         labels:
             service: "jitsi-jvb"
         environment:
