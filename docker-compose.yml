@@ -223,10 +223,10 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             # - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
-            # - ./prosody/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
+            - ./prosody/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
             - ./prosody/rootfs/etc/cont-finish.d/register-users:/etc/cont-finish.d/register-users:Z
             - ./prosody/rootfs/defaults/prosody.cfg.lua:/defaults/prosody.cfg.lua:ro
-            # - ./prosody/rootfs/defaults/jitsi-meet.cfg.lua:/defaults/jitsi-meet.cfg.lua:ro
+            - ./prosody/rootfs/defaults/jitsi-meet.cfg.lua:/defaults/jitsi-meet.cfg.lua:ro
             #- /root/jitsi-meet.cfg.lua:/config/conf.d/jitsi-meet.cfg.lua:ro
         env_file:
             - .env
