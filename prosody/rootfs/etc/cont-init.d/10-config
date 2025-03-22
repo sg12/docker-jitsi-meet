@@ -2,7 +2,7 @@
 
 # Настройки LDAP (если нужно)
 if [[ ! -f /etc/saslauthd.conf ]] && [[ "$AUTH_TYPE" == "ldap" ]]; then
-    envsubst < /defaults/saslauthd.conf > /etc/saslauthd.conf
+    sed "s|\${LDAP_SERVER}|${LDAP_SERVER}|g" /defaults/saslauthd.conf > /etc/saslauthd.conf
     mkdir -pm777 /var/run/saslauthd
     adduser prosody sasl
     echo >> /etc/ldap/ldap.conf "TLS_REQCERT allow"
@@ -40,20 +40,13 @@ elif [[ "$PROSODY_MODE" == "brewery" ]]; then
     export XMPP_AUTH_DOMAIN="$JVB_XMPP_AUTH_DOMAIN"
     export PROSODY_C2S_REQUIRE_ENCRYPTION="true"
     mkdir -p /config/rules.d
-    envsubst < /defaults/rules.d/jvb_muc_presence_filter.pfw > /config/rules.d/jvb_muc_presence_filter.pfw
+    sed "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN}|g" /defaults/rules.d/jvb_muc_presence_filter.pfw > /config/rules.d/jvb_muc_presence_filter.pfw
 else
     echo "Prosody normal mode, using default config"
     PROSODY_SITE_CFG="jitsi-meet.cfg.lua"
     rm /config/conf.d/visitors.cfg.lua
     rm /config/conf.d/brewery.cfg.lua
 fi
-
-# Экспорт переменных для envsubst
-export XMPP_DOMAINS="${XMPP_DOMAINS}"
-export XMPP_AUTH_DOMAIN="${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}"
-export XMPP_RECORDER_DOMAIN="${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}"
-export JWT_APP_ID="${JWT_APP_ID}"
-export JWT_APP_SECRET="${JWT_APP_SECRET}"
 
 # Проверка обязательных переменных
 if [[ -z $JICOFO_AUTH_PASSWORD ]]; then
@@ -78,7 +71,9 @@ if [[ -z $JWT_APP_SECRET ]]; then
 fi
 
 # Копирование и обработка шаблона prosody.cfg.lua
-envsubst < /defaults/prosody.cfg.lua > "$PROSODY_CFG"
+sed -e "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}|g" \
+    -e "s|\${XMPP_DOMAINS}|${XMPP_DOMAINS}|g" \
+    /defaults/prosody.cfg.lua > "$PROSODY_CFG"
 
 # Добавление VirtualHost для каждого домена из XMPP_DOMAINS
 IFS=',' read -r -a DOMAINS <<< "$XMPP_DOMAINS"
@@ -108,7 +103,9 @@ EOF
 done
 
 # Копирование и обработка шаблона jitsi-meet.cfg.lua
-envsubst < /defaults/$PROSODY_SITE_CFG > "/config/conf.d/$PROSODY_SITE_CFG"
+sed -e "s|\${XMPP_AUTH_DOMAIN}|${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}|g" \
+    -e "s|\${XMPP_RECORDER_DOMAIN}|${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}|g" \
+    /defaults/$PROSODY_SITE_CFG > "/config/conf.d/$PROSODY_SITE_CFG"
 
 # Добавление компонентов для первого домена
 FIRST_DOMAIN="${DOMAINS[0]}"
@@ -121,7 +118,7 @@ Component "conference.$FIRST_DOMAIN" "muc"
     modules_enabled = { "muc_meeting_id"; "muc_domain_mapper"; "polls"; }
 
 Component "focus.$FIRST_DOMAIN" "client_proxy"
-    target_address = "focus@$XMPP_AUTH_DOMAIN"
+    target_address = "focus@${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}"
 
 Component "speakerstats.$FIRST_DOMAIN" "speakerstats_component"
     muc_component = "muc.$FIRST_DOMAIN"
@@ -159,13 +156,13 @@ EOF
 [ -z "${JIGASI_XMPP_USER}" ] && export JIGASI_XMPP_USER=jigasi
 [ -z "${JVB_AUTH_USER}" ] && export JVB_AUTH_USER=jvb
 
-echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register focus "$XMPP_AUTH_DOMAIN" -
-echo "$JVB_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JVB_AUTH_USER" "$XMPP_AUTH_DOMAIN" -
+echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register focus "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
+echo "$JVB_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JVB_AUTH_USER" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
 if [[ ! -z $JIBRI_XMPP_PASSWORD ]]; then
-    echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIBRI_XMPP_USER" "$XMPP_AUTH_DOMAIN" -
+    echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIBRI_XMPP_USER" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
 fi
 if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
-    echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIGASI_XMPP_USER" "$XMPP_AUTH_DOMAIN" -
+    echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "$JIGASI_XMPP_USER" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
 fi
 
 # Генерация сертификатов для всех доменов
@@ -180,22 +177,22 @@ for DOMAIN in "${DOMAINS[@]}"; do
     fi
 done
 
-if [[ ! -f /config/certs/$XMPP_AUTH_DOMAIN.crt ]]; then
-    echo "Generating certificate for $XMPP_AUTH_DOMAIN"
-    echo | prosodyctl --config "$PROSODY_CFG" cert generate "$XMPP_AUTH_DOMAIN"
-    cp -f /var/lib/prosody/"$XMPP_AUTH_DOMAIN.crt" /config/certs/"$XMPP_AUTH_DOMAIN.crt"
-    cp -f /var/lib/prosody/"$XMPP_AUTH_DOMAIN.key" /config/certs/"$XMPP_AUTH_DOMAIN.key"
-    chown prosody:prosody /config/certs/"$XMPP_AUTH_DOMAIN".{crt,key}
-    chmod 640 /config/certs/"$XMPP_AUTH_DOMAIN".{crt,key}
+if [[ ! -f /config/certs/${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}.crt ]]; then
+    echo "Generating certificate for ${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}"
+    echo | prosodyctl --config "$PROSODY_CFG" cert generate "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}"
+    cp -f /var/lib/prosody/"${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}.crt" /config/certs/"${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}.crt"
+    cp -f /var/lib/prosody/"${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}.key" /config/certs/"${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}.key"
+    chown prosody:prosody /config/certs/"${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}".{crt,key}
+    chmod 640 /config/certs/"${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}".{crt,key}
 fi
 
-if [[ ! -f /config/certs/$XMPP_RECORDER_DOMAIN.crt ]]; then
-    echo "Generating certificate for $XMPP_RECORDER_DOMAIN"
-    echo | prosodyctl --config "$PROSODY_CFG" cert generate "$XMPP_RECORDER_DOMAIN"
-    cp -f /var/lib/prosody/"$XMPP_RECORDER_DOMAIN.crt" /config/certs/"$XMPP_RECORDER_DOMAIN.crt"
-    cp -f /var/lib/prosody/"$XMPP_RECORDER_DOMAIN.key" /config/certs/"$XMPP_RECORDER_DOMAIN.key"
-    chown prosody:prosody /config/certs/"$XMPP_RECORDER_DOMAIN".{crt,key}
-    chmod 640 /config/certs/"$XMPP_RECORDER_DOMAIN".{crt,key}
+if [[ ! -f /config/certs/${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}.crt ]]; then
+    echo "Generating certificate for ${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}"
+    echo | prosodyctl --config "$PROSODY_CFG" cert generate "${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}"
+    cp -f /var/lib/prosody/"${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}.crt" /config/certs/"${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}.crt"
+    cp -f /var/lib/prosody/"${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}.key" /config/certs/"${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}.key"
+    chown prosody:prosody /config/certs/"${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}".{crt,key}
+    chmod 640 /config/certs/"${XMPP_RECORDER_DOMAIN:-recorder.meet.jitsi}".{crt,key}
 fi
 
 # Очистка .cnf файлов
