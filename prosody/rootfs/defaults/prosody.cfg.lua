@@ -33,3 +33,21 @@ VirtualHost "${XMPP_AUTH_DOMAIN}"
     modules_enabled = { "limits_exception"; "smacks"; }
 
 Include "conf.d/*.cfg.lua"
+
+VirtualHost "meet.jitsi"
+    authentication = "jitsi-anonymous"
+    ssl = {
+        key = "/config/certs/meet.jitsi.key";
+        certificate = "/config/certs/meet.jitsi.crt";
+    }
+    modules_enabled = {
+        "bosh"; "websocket"; "smacks"; "speakerstats"; "conference_duration"; "room_metadata";
+        "end_conference"; "muc_lobby_rooms"; "muc_breakout_rooms"; "av_moderation";
+    }
+    main_muc = "muc.meet.jitsi"
+    lobby_muc = "lobby.meet.jitsi"
+    breakout_rooms_muc = "breakout.meet.jitsi"
+    speakerstats_component = "speakerstats.meet.jitsi"
+    conference_duration_component = "conferenceduration.meet.jitsi"
+    end_conference_component = "endconference.meet.jitsi"
+    av_moderation_component = "avmoderation.meet.jitsi"
