@@ -20,7 +20,7 @@ if [[ -z $JVB_DISABLE_XMPP ]]; then
     export JVB_WS_SERVER_ID_FALLBACK="$LOCAL_ADDRESS"
 fi
 
-# Указываем публичный IP (если есть)
+# Указываем публичный IP
 if [[ -z "${JVB_ADVERTISE_IPS}" && ! -z "${DOCKER_HOST_ADDRESS}" ]]; then
     echo "WARNING: DOCKER_HOST_ADDRESS is deprecated, migrate to JVB_ADVERTISE_IPS"
     export JVB_ADVERTISE_IPS=${DOCKER_HOST_ADDRESS}
