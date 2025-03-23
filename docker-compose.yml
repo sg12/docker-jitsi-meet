@@ -378,6 +378,8 @@ services:
             - ./jicofo/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
         labels:
             service: "jitsi-jicofo"
+        env_file:
+            - .env
         environment:
             - AUTH_TYPE
             - BRIDGE_AVG_PARTICIPANT_STRESS
@@ -470,6 +472,8 @@ services:
             - ./jvb/rootfs/defaults/jvb.conf:/defaults/jvb.conf:ro
         labels:
             service: "jitsi-jvb"
+        env_file:
+            - .env
         environment:
             - AUTOSCALER_SIDECAR_KEY_FILE
             - AUTOSCALER_SIDECAR_KEY_ID
