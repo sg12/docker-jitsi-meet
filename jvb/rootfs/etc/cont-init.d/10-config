@@ -18,12 +18,19 @@ if [[ -z $JVB_DISABLE_XMPP ]]; then
     # Локальный IP для ICE
     export LOCAL_ADDRESS=$(ip route get 1 | grep -oP '(?<=src ).*' | awk '{ print $1 '})
     export JVB_WS_SERVER_ID_FALLBACK="$LOCAL_ADDRESS"
-fi
 
-# Указываем публичный IP
-if [[ -z "${JVB_ADVERTISE_IPS}" && ! -z "${DOCKER_HOST_ADDRESS}" ]]; then
-    echo "WARNING: DOCKER_HOST_ADDRESS is deprecated, migrate to JVB_ADVERTISE_IPS"
-    export JVB_ADVERTISE_IPS=${DOCKER_HOST_ADDRESS}
+    # Резолвим доменные имена в IP-адреса
+    if [[ -n "$JVB_ADVERTISE_DOMAINS" ]]; then
+        IFS=',' read -r -a DOMAINS <<< "$JVB_ADVERTISE_DOMAINS"
+        IPS=""
+        for DOMAIN in "${DOMAINS[@]}"; do
+            IP=$(dig +short "$DOMAIN" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
+            if [[ -n "$IP" ]]; then
+                IPS="${IPS:+$IPS,}$IP"
+            fi
+        done
+        export JVB_ADVERTISE_IPS="${IPS:-$LOCAL_ADDRESS}"
+    fi
 fi
 
 # Генерация конфигурационных файлов
