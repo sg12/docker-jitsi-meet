@@ -18,6 +18,8 @@ services:
             - /root/default:/etc/nginx/sites-enabled/jitsi-connectrm-test.ru.conf:ro
         labels:
             service: "jitsi-web"
+        env_file:
+          - .env
         environment:
             - AMPLITUDE_ID
             - ANALYTICS_SCRIPT_URLS
