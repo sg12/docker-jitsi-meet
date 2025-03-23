@@ -466,6 +466,7 @@ services:
             - '127.0.0.1:${JVB_COLIBRI_PORT:-8080}:8080'
         volumes:
             - ${CONFIG}/jvb:/config:Z
+            - ./jvb/rootfs/etc/cont-init.d/10-config:/etc/cont-init.d/10-config:Z
             - ./jvb/rootfs/defaults/jvb.conf:/defaults/jvb.conf:ro
         labels:
             service: "jitsi-jvb"
