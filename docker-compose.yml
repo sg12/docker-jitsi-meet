@@ -19,7 +19,9 @@ services:
             - /etc/ssl/privkey.pem:/config/keys/cert.key:ro
             # - /root/jitsi-nginx.conf:/etc/nginx/sites-enabled/jitsi-connectrm-test.ru.conf:ro
             - /root/jitsi-nginx.conf:/config/nginx/site-confs/default:ro
-            - /root/10-config-custom:/etc/cont-init.d/10-config:ro
+            #- /root/10-config-custom:/etc/cont-init.d/10-config:ro
+            - /root/10-config-custom:/tmp/10-config-custom:ro
+            
         labels:
             service: "jitsi-web"
         env_file:
