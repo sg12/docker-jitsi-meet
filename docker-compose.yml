@@ -21,7 +21,7 @@ services:
             # - /root/jitsi-nginx.conf:/config/nginx/site-confs/default:ro
             #- /root/10-config-custom:/etc/cont-init.d/10-config:ro
             # - /root/10-config-custom:/tmp/10-config-custom:ro
-        entrypoint: ["/bin/bash", "-c", "cp -f /tmp/10-config-custom /etc/cont-init.d/10-config && chmod 755 /etc/cont-init.d/10-config && /init"]
+        # entrypoint: ["/bin/bash", "-c", "cp -f /tmp/10-config-custom /etc/cont-init.d/10-config && chmod 755 /etc/cont-init.d/10-config && /init"]
         labels:
             service: "jitsi-web"
         env_file:
