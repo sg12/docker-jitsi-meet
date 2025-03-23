@@ -206,8 +206,6 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
-            - /etc/ssl/fullchain.pem:/config/certs/jitsi-connectrm-test.ru.crt:ro
-            - /etc/ssl/privkey.pem:/config/certs/jitsi-connectrm-test.ru.key:ro
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
