@@ -8,16 +8,16 @@ while ! prosodyctl --config "$PROSODY_CFG" status | grep -q "Prosody is running"
 done
 
 echo "Registering focus user..."
-echo "$JICOFO_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register focus "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
+echo -e "$JICOFO_AUTH_PASSWORD\n$JICOFO_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" adduser focus@${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}
 echo "Registering jvb user..."
-echo "$JVB_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "${JVB_AUTH_USER:-jvb}" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
+echo -e "$JVB_AUTH_PASSWORD\n$JVB_AUTH_PASSWORD" | prosodyctl --config "$PROSODY_CFG" adduser ${JVB_AUTH_USER:-jvb}@${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}
 if [[ ! -z $JIBRI_XMPP_PASSWORD ]]; then
     echo "Registering jibri user..."
-    echo "$JIBRI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "${JIBRI_XMPP_USER:-jibri}" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
+    echo -e "$JIBRI_XMPP_PASSWORD\n$JIBRI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" adduser ${JIBRI_XMPP_USER:-jibri}@${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}
 fi
 if [[ ! -z $JIGASI_XMPP_PASSWORD ]]; then
     echo "Registering jigasi user..."
-    echo "$JIGASI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" register "${JIGASI_XMPP_USER:-jigasi}" "${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}" -
+    echo -e "$JIGASI_XMPP_PASSWORD\n$JIGASI_XMPP_PASSWORD" | prosodyctl --config "$PROSODY_CFG" adduser ${JIGASI_XMPP_USER:-jigasi}@${XMPP_AUTH_DOMAIN:-auth.meet.jitsi}
 fi
 
 echo "Checking registered users after registration..."
