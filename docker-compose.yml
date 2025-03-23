@@ -15,6 +15,7 @@ services:
             - ${CONFIG}/web/load-test:/usr/share/jitsi-meet/load-test:Z
             - /etc/ssl/fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
             - /etc/ssl/privkey.pem:/etc/ssl/private/privkey.pem:ro
+            - /root/default:/etc/nginx/sites-enabled/jitsi-connectrm-test.ru.conf:ro
         labels:
             service: "jitsi-web"
         environment:
