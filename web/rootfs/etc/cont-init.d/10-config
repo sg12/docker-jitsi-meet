@@ -32,12 +32,12 @@ echo "Using Nginx resolver: =$NGINX_RESOLVER="
 # Явно экспортируем HTTPS_PORT
 export HTTPS_PORT=${HTTPS_PORT:-8443}
 
-# Генерация самоподписанного сертификата, если он отсутствует
-if [ ! -f /etc/ssl/certs/selfsigned.crt ] || [ ! -f /etc/ssl/private/selfsigned.key ]; then
+# Генерация самоподписанного сертификата с нужными именами
+if [ ! -f /etc/ssl/certs/fullchain.pem ] || [ ! -f /etc/ssl/private/privkey.pem ]; then
     echo "Generating self-signed SSL certificate..."
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout /etc/ssl/private/selfsigned.key \
-        -out /etc/ssl/certs/selfsigned.crt \
+        -keyout /etc/ssl/private/privkey.pem \
+        -out /etc/ssl/certs/fullchain.pem \
         -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=${XMPP_DOMAIN:-localhost}"
 fi
 
@@ -64,8 +64,7 @@ tpl /defaults/ssl.conf > /etc/nginx/conf.d/ssl.conf
 # Всегда используем шаблон /defaults/default, игнорируя локальный файл
 tpl /defaults/default > /etc/nginx/sites-enabled/default
 
-tpl /defaults/system-config.js > /usr/share/jitsi-meet/config.js
-tpl /defaults/settings-config.js >> /usr/share/jitsi-meet/config.js
+# Убираем запись в config.js напрямую
 if [[ -f /config/custom-config.js ]]; then
     cat /config/custom-config.js >> /usr/share/jitsi-meet/config.js
 fi
