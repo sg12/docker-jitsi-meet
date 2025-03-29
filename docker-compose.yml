@@ -3,25 +3,16 @@ version: '3.5'
 services:
     # Frontend
     web:
-        build:  # 🔹 Добавляем сборку из репозитория
-            context: .
-            dockerfile: web/Dockerfile
-            args:
-                JITSI_GIT_REPO: https://github.com/sg12/jitsi-meet.git
-                JITSI_BRANCH: develop
-
+        image: sg12sib/jitsi-web:custom
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
-            - '8443:8443'  # Прокси на 8443
-            - '8000:8000'  # Прокси на 8000 (если нужно слушать этот порт)
+            - '${HTTP_PORT}:80'
+            - '${HTTPS_PORT}:443'
         volumes:
             - ${CONFIG}/web:/config:Z
             - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
             - ${CONFIG}/transcripts:/usr/share/jitsi-meet/transcripts:Z
             - ${CONFIG}/web/load-test:/usr/share/jitsi-meet/load-test:Z
-            - /etc/ssl/fullchain.pem:/etc/ssl/certs/fullchain.pem:ro
-            - /etc/ssl/privkey.pem:/etc/ssl/private/privkey.pem:ro
-            - ${CONFIG}/web/rootfs/defaults/meet.conf:/config/nginx/meet.conf:ro
         labels:
             service: "jitsi-web"
         environment:
@@ -201,9 +192,7 @@ services:
 
     # XMPP server
     prosody:
-        build:
-            context: ./prosody
-            dockerfile: Dockerfile
+        image: jitsi/prosody:${JITSI_IMAGE_VERSION:-unstable}
         restart: ${RESTART_POLICY:-unless-stopped}
         expose:
             - '${XMPP_PORT:-5222}'
