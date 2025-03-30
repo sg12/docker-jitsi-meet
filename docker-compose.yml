@@ -501,31 +501,31 @@ services:
             - prosody
         networks:
             meet.jitsi:
-    turn:
-        image: coturn/coturn:latest
-        restart: unless-stopped
-        ports:
-            - '3478:3478/udp'
-            - '3478:3478/tcp'
-            - '5349:5349/tcp'
-        volumes:
-            - ${CONFIG}/turn:/etc/turnserver
-            - /etc/ssl/fullchain.pem:/etc/ssl/certs/jitsi-fullchain.pem:ro
-            - /etc/ssl/privkey.pem:/etc/ssl/private/jitsi-privkey.pem:ro
-        command: >
-            -n --log-file=stdout
-            --listening-ip=0.0.0.0
-            --external-ip=89.111.140.160
-            --listening-port=3478
-            --tls-listening-port=5349
-            --realm=jitsi-connectrm-test.ru
-            --user=turnuser:turnpassword
-            --cert=/etc/ssl/certs/jitsi-fullchain.pem
-            --pkey=/etc/ssl/private/jitsi-privkey.pem
-        networks:
-            meet.jitsi:
-                aliases:
-                    - turn.jitsi-connectrm-test.ru
+    # turn:
+    #     image: coturn/coturn:latest
+    #     restart: unless-stopped
+    #     ports:
+    #         - '3478:3478/udp'
+    #         - '3478:3478/tcp'
+    #         - '5349:5349/tcp'
+    #     volumes:
+    #         - ${CONFIG}/turn:/etc/turnserver
+    #         - /etc/ssl/fullchain.pem:/etc/ssl/certs/jitsi-fullchain.pem:ro
+    #         - /etc/ssl/privkey.pem:/etc/ssl/private/jitsi-privkey.pem:ro
+    #     command: >
+    #         -n --log-file=stdout
+    #         --listening-ip=0.0.0.0
+    #         --external-ip=89.111.140.160
+    #         --listening-port=3478
+    #         --tls-listening-port=5349
+    #         --realm=jitsi-connectrm-test.ru
+    #         --user=turnuser:turnpassword
+    #         --cert=/etc/ssl/certs/jitsi-fullchain.pem
+    #         --pkey=/etc/ssl/private/jitsi-privkey.pem
+    #     networks:
+    #         meet.jitsi:
+    #             aliases:
+    #                 - turn.jitsi-connectrm-test.ru
 
 # Custom network so all services can communicate using a FQDN
 networks:
