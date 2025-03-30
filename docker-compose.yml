@@ -502,13 +502,16 @@ services:
         image: coturn/coturn:latest
         restart: unless-stopped
         ports:
-            - '3478:3478/udp'  # Стандартный порт TURN
+            - '3478:3478/udp'
             - '3478:3478/tcp'
-            - '5349:5349/tcp'  # TLS порт для TURN
+            - '5349:5349/tcp'
         volumes:
             - ${CONFIG}/turn:/etc/turnserver
+            - /etc/ssl/fullchain.pem:/etc/ssl/certs/jitsi-fullchain.pem:ro
+            - /etc/ssl/privkey.pem:/etc/ssl/private/jitsi-privkey.pem:ro
         command: >
             -n --log-file=stdout
+            --listening-ip=0.0.0.0
             --external-ip=89.111.140.160
             --listening-port=3478
             --tls-listening-port=5349
