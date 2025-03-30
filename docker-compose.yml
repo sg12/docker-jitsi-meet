@@ -7,6 +7,9 @@ services:
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '8443:443'
+            - '3478:3478/udp'
+            - '3478:3478/tcp'
+            - '5349:5349/tcp'
         volumes:
             - ${CONFIG}/web:/config:Z
             - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
