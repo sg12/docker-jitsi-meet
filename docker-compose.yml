@@ -204,6 +204,8 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
+            - ./prosody/rootfs/defaults/conf.d/custom-muc.cfg.lua:/defaults/conf.d/custom-muc.cfg.lua:ro
+
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
