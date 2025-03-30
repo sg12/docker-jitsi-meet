@@ -3,7 +3,8 @@ version: '3.5'
 services:
     # Frontend
     web:
-        image: sg12sib/jitsi-web:custom-full
+        # image: sg12sib/jitsi-web:custom-full
+        image: jitsi/web:${JITSI_IMAGE_VERSION:-stable}
         restart: ${RESTART_POLICY:-unless-stopped}
         ports:
             - '8443:443'
