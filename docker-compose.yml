@@ -13,6 +13,8 @@ services:
             - ${CONFIG}/web/crontabs:/var/spool/cron/crontabs:Z
             - ${CONFIG}/transcripts:/usr/share/jitsi-meet/transcripts:Z
             - ${CONFIG}/web/load-test:/usr/share/jitsi-meet/load-test:Z
+            - /root/docker-jitsi-meet/certs/jitsi-fullchain.pem:/etc/ssl/certs/jitsi-fullchain.pem:Z
+            - /root/docker-jitsi-meet/certs/jitsi-privkey.pem:/etc/ssl/private/jitsi-privkey.pem:Z
         labels:
             service: "jitsi-web"
         environment:
