@@ -514,6 +514,7 @@ services:
           - XMPP_INTERNAL_MUC_DOMAIN
           - TZ
           - JVB_PORT=10000
+          - JVB_AUTH_PASSWORD
         networks:
           meet.jitsi:
 
