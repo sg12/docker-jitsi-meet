@@ -499,6 +499,23 @@ services:
             - prosody
         networks:
             meet.jitsi:
+            
+    jvb2:  # Второй видеомост
+        image: jitsi/jvb:unstable
+        ports:
+          - "10001:10000/udp"  # Используем другой внешний порт
+          - "127.0.0.1:8081:8080"  # Разные порты для HTTP API
+        volumes:
+          - ${CONFIG}/jvb2:/config:Z  # Отдельная директория для конфигурации
+        environment:
+          - XMPP_DOMAIN
+          - XMPP_AUTH_DOMAIN
+          - XMPP_MUC_DOMAIN
+          - XMPP_INTERNAL_MUC_DOMAIN
+          - TZ
+          - JVB_PORT=10000
+        networks:
+          meet.jitsi:
 
 # Custom network so all services can communicate using a FQDN
 networks:
