@@ -133,7 +133,7 @@ services:
             - NGINX_WORKER_CONNECTIONS
             - PEOPLE_SEARCH_URL
             - PREFERRED_LANGUAGE
-            - PUBLIC_URL
+            - PUBLIC_URL=https://www.connect-rm-video.ru
             - P2P_PREFERRED_CODEC
             - P2P_STUN_SERVERS
             - RESOLUTION
