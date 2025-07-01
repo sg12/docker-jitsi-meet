@@ -206,6 +206,7 @@ services:
         volumes:
             - ${CONFIG}/prosody/config:/config:Z
             - ${CONFIG}/prosody/prosody-plugins-custom:/prosody-plugins-custom:Z
+            - ${CONFIG}/prosody/config/conf.d/jitsi-meet.cfg.lua:/etc/prosody/conf.d/jitsi-meet.cfg.lua:Z
         environment:
             - AUTH_TYPE
             - DISABLE_POLLS
